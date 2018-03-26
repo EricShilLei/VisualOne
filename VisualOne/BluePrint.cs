@@ -17,11 +17,25 @@ namespace VisualOne
         public string type { get; set; }
 
         public string cropNonCrop { get; set; }
- 
-        public string aspectRaio { get; set; }
+
+        public string aspectRaio;
+
+        public string variant { get; set; }
+
+        public UInt32 kept { get; set; }
+
+        public UInt32 seen { get; set; }
+
+        public double keptRate { get; set; }
 
         public string path;
 
         public string[] otherProperties;
+    }
+
+    public struct TempSeenKeptRecord
+    {
+        public UInt32 seen;
+        public UInt32 kept;
     }
 }

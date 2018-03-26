@@ -47,6 +47,7 @@
             // 
             // catalogButton
             // 
+            this.catalogButton.Enabled = false;
             this.catalogButton.Location = new System.Drawing.Point(524, 241);
             this.catalogButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.catalogButton.Name = "catalogButton";

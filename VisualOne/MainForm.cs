@@ -21,16 +21,49 @@ namespace VisualOne
         private string root = @"c:\users\dzhang\desktop\";
         private string source = "Active";
         private string outputRoot = @"c:\Rendered\Active\";
+        private string performanceSummaryPath = @"c:\Rendered\Active\1day.txt";
 
         public MainForm()
         {
             InitializeComponent();
         }
 
+        private void ReadPerformanceSummary(Dictionary<string, TempSeenKeptRecord> performanceValues)
+        {
+            StreamReader summaryReader = File.OpenText(performanceSummaryPath);
+            while (!summaryReader.EndOfStream)
+            {
+                string bpLine = summaryReader.ReadLine();
+                string[] segments = bpLine.Split(' ');
+                if (segments.Count() != 3)
+                    continue;
+                string guid = segments[0];
+                string seen = segments[1];
+                string kept = segments[2];
+                try
+                {
+                    UInt32 seenCount = UInt32.Parse(seen);
+                    UInt32 keptCount = UInt32.Parse(kept);
+                    if (keptCount > seenCount)
+                        throw new ArgumentOutOfRangeException();
+                    TempSeenKeptRecord record = new TempSeenKeptRecord();
+                    record.seen = seenCount;
+                    record.kept = keptCount;
+                    performanceValues.Add(guid, record);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+        }
+
         private void CreateCatalog(string root, string source, string outputRoot)
         {
             string directory = root + source;
             var pptxFiles = Directory.EnumerateFiles(directory, "*.pptx", SearchOption.AllDirectories);
+            Dictionary<string, TempSeenKeptRecord> performanceValues = new Dictionary<string, TempSeenKeptRecord>();
+            ReadPerformanceSummary(performanceValues);
 
             m_bluePrints.Clear();
             foreach (string currentFile in pptxFiles)
@@ -58,7 +91,7 @@ namespace VisualOne
                         if(pngFiles.Contains(outputPath + bluePrintGuid + ".png"))
                         {
                             BluePrint bp = new BluePrint();
-                            bp.source = currentFile;
+                            bp.source = path;
                             bp.layout = layout;
                             bp.type = type;
                             bp.aspectRaio = aspect;
@@ -66,6 +99,18 @@ namespace VisualOne
                             bp.guid = bluePrintGuid;
                             bp.otherProperties = properties;
                             bp.path = outputPath + bluePrintGuid + ".png";
+                            foreach (string property in properties)
+                            {
+                                if (property.StartsWith("Variant="))
+                                    bp.variant = property.Substring(8);
+                            }
+                            if (performanceValues.ContainsKey(bluePrintGuid))
+                            {
+                                bp.kept = performanceValues[bluePrintGuid].kept;
+                                bp.seen = performanceValues[bluePrintGuid].seen;
+                                if (bp.seen > 0)
+                                    bp.keptRate = (double)bp.kept / bp.seen;
+                            }
                             m_bluePrints.Add(bp);
                         }
                     }
@@ -166,6 +211,7 @@ namespace VisualOne
 
         private void MainForm_Load(object sender, EventArgs e)
         {
+            CreateCatalog(root, source, outputRoot);
         }
 
         private void CatalogButton_Click(object sender, EventArgs e)
