@@ -10,11 +10,20 @@ namespace VisualOne
     public partial class CatalogForm : Form
     {
         private BindingListView<BluePrint> m_bluePrintsView;
-        public CatalogForm( List<BluePrint> bluePrints)
+        public CatalogClass Catalog;
+
+        public CatalogForm(CatalogClass catalog)
         {
             InitializeComponent();
+            if (catalog == null)
+            {
+                Catalog = new CatalogClass();
+                Catalog.CreateCatalog();
+            }
+            else
+                Catalog = catalog;
             var source = new BindingSource();
-            m_bluePrintsView = new BindingListView<BluePrint>(bluePrints);
+            m_bluePrintsView = new BindingListView<BluePrint>(Catalog.m_bluePrints);
             source.DataSource = m_bluePrintsView;
             this.CatalogGridView.AutoGenerateColumns = true;
             this.CatalogGridView.DataSource = source;

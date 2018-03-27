@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BluePrint.cs" />
+    <Compile Include="Catalog.cs" />
     <Compile Include="CatalogForm.cs">
       <SubType>Form</SubType>
     </Compile>
