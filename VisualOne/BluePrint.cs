@@ -20,13 +20,13 @@ namespace VisualOne
 
         public string aspectRaio;
 
-        public string variant { get; set; }
+        public string variant;
+
+        public double keptRate { get; set; }
 
         public UInt32 kept { get; set; }
 
         public UInt32 seen { get; set; }
-
-        public double keptRate { get; set; }
 
         public string path;
 

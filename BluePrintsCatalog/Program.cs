@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace VisualOne
+using VisualOne;
+
+namespace BluePrintsCatalog
 {
     static class Program
     {
@@ -16,7 +18,7 @@ namespace VisualOne
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new CatalogForm(null));
         }
     }
 }

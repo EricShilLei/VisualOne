@@ -13,15 +13,14 @@ namespace VisualOne
     public class CatalogClass
     {
         public List<BluePrint> m_bluePrints = new List<BluePrint>();
-        //        private string root = @"\\ppt-svc\Features\AutoLayout\DSNR\Blueprints\";
-        private string root = @"c:\users\dzhang\desktop\";
-        private string source = "Active";
-        private string outputRoot = @"c:\Rendered\Active\";
-        private string performanceSummaryPath = @"c:\Rendered\Active\7day.txt";
 
+        // private string m_sourceRoot = @"\\ppt-svc\Features\AutoLayout\DSNR\Blueprints\Active";
+        private string m_sourceRoot = @"c:\users\dzhang\desktop\Active";
+        private string m_outputRoot = @"c:\Rendered\Active\";
+  
         private void ReadPerformanceSummary(Dictionary<string, TempSeenKeptRecord> performanceValues)
         {
-            StreamReader summaryReader = File.OpenText(performanceSummaryPath);
+            StreamReader summaryReader = File.OpenText(m_outputRoot + "7day.txt");
             while (!summaryReader.EndOfStream)
             {
                 string bpLine = summaryReader.ReadLine();
@@ -49,9 +48,49 @@ namespace VisualOne
             }
         }
 
+        public void RasterizeOriginals()
+        {
+            var pptApp = new PPT.Application();
+            string directory = m_sourceRoot;
+            var pptxFiles = Directory.EnumerateFiles(directory, "*.pptx", SearchOption.AllDirectories);
+            List<string> failedFiles = new List<string>();
+            List<string> successFiles = new List<string>();
+            List<string> failedFinalFiles = new List<string>();
+
+            foreach (string currentFile in pptxFiles)
+            {
+                try
+                {
+                    RasterizeOneOriginal(pptApp, currentFile, directory, m_outputRoot);
+                    successFiles.Add(currentFile);
+                }
+                catch (Exception e)
+                {
+                    failedFiles.Add(currentFile);
+                    Console.WriteLine(e.Message);
+                    if ((uint)e.HResult == 0x0800706ba)
+                        pptApp = new PPT.Application();
+                }
+            }
+
+            foreach (string currentFile in failedFiles)
+            {
+                try
+                {
+                    RasterizeOneOriginal(pptApp, currentFile, directory, m_outputRoot);
+                    successFiles.Add(currentFile);
+                }
+                catch (Exception e)
+                {
+                    failedFinalFiles.Add(currentFile);
+                    Console.WriteLine(e.Message);
+                }
+            }
+        }
+ 
         public void CreateCatalog()
         {
-            string directory = root + source;
+            string directory = m_sourceRoot;
             var pptxFiles = Directory.EnumerateFiles(directory, "*.pptx", SearchOption.AllDirectories);
             Dictionary<string, TempSeenKeptRecord> performanceValues = new Dictionary<string, TempSeenKeptRecord>();
             ReadPerformanceSummary(performanceValues);
@@ -67,7 +106,7 @@ namespace VisualOne
                 string aspect = segments[3];
                 string path = segments[4];
 
-                string outputPath = outputRoot + layout + "_" + type + "_" + crop + "_" + aspect + "_" + path + "\\";
+                string outputPath = m_outputRoot + layout + "_" + type + "_" + crop + "_" + aspect + "_" + path + "\\";
                 if (!Directory.Exists(outputPath))
                     continue;
                 string[] pngFiles = Directory.GetFiles(outputPath, "*.png", SearchOption.TopDirectoryOnly);
@@ -100,13 +139,44 @@ namespace VisualOne
                                 bp.kept = performanceValues[bluePrintGuid].kept;
                                 bp.seen = performanceValues[bluePrintGuid].seen;
                                 if (bp.seen > 0)
-                                    bp.keptRate = (double)bp.kept / bp.seen;
+                                    bp.keptRate = (double)bp.kept * 800 / bp.seen;
                             }
                             m_bluePrints.Add(bp);
                         }
                     }
                 }
                 catalogReader.Close();
+            }
+        }
+
+        private void RasterizeOneOriginal(PPT.Application app, string currentFile, string directory, string outputRoot)
+        {
+            string fileName = currentFile.Substring(directory.Length + 1);
+            string[] segments = fileName.Split('\\');
+            string layout = segments[0];
+            string type = segments[1];
+            string crop = segments[2];
+            string aspect = segments[3];
+            string path = segments[4];
+            if (path.StartsWith("~"))
+                return;
+
+            PPT.Presentation pres = app.Presentations.Open(currentFile, MSO.MsoTriState.msoTrue);
+            string outputPath = outputRoot + layout + "_" + type + "_" + crop + "_" + aspect + "_" + path + "\\";
+            Directory.CreateDirectory(outputPath);
+            try
+            {
+                PPT.Slide sld = pres.Slides[1];
+                var newSlide = pres.Slides.AddSlide(1, sld.CustomLayout);
+                newSlide.Export(outputPath + "original" + ".png", "png");
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
+            finally
+            {
+                pres.Close();
             }
         }
 
@@ -163,7 +233,7 @@ namespace VisualOne
         public void RasterizeDirectory()
         {
             var pptApp = new PPT.Application();
-            string directory = root + source;
+            string directory = m_sourceRoot;
             var pptxFiles = Directory.EnumerateFiles(directory, "*.pptx", SearchOption.AllDirectories);
             List<string> failedFiles = new List<string>();
             List<string> successFiles = new List<string>();
@@ -173,7 +243,7 @@ namespace VisualOne
             {
                 try
                 {
-                    RasterizeOne(pptApp, currentFile, directory, outputRoot);
+                    RasterizeOne(pptApp, currentFile, directory, m_outputRoot);
                     successFiles.Add(currentFile);
                 }
                 catch (Exception e)
@@ -189,7 +259,7 @@ namespace VisualOne
             {
                 try
                 {
-                    RasterizeOne(pptApp, currentFile, directory, outputRoot);
+                    RasterizeOne(pptApp, currentFile, directory, m_outputRoot);
                     successFiles.Add(currentFile);
                 }
                 catch (Exception e)

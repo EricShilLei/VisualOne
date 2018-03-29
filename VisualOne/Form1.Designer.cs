@@ -31,48 +31,61 @@
             this.rasterizeButton = new System.Windows.Forms.Button();
             this.catalogButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // rasterizeButton
             // 
             this.rasterizeButton.Enabled = false;
-            this.rasterizeButton.Location = new System.Drawing.Point(524, 81);
+            this.rasterizeButton.Location = new System.Drawing.Point(566, 259);
             this.rasterizeButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.rasterizeButton.Name = "rasterizeButton";
             this.rasterizeButton.Size = new System.Drawing.Size(484, 108);
             this.rasterizeButton.TabIndex = 0;
-            this.rasterizeButton.Text = "Rasterize";
+            this.rasterizeButton.Text = "Rasterize BluePrints";
             this.rasterizeButton.UseVisualStyleBackColor = true;
             this.rasterizeButton.Click += new System.EventHandler(this.RasterizeButton_Click);
             // 
             // catalogButton
             // 
             this.catalogButton.Enabled = false;
-            this.catalogButton.Location = new System.Drawing.Point(524, 241);
+            this.catalogButton.Location = new System.Drawing.Point(566, 419);
             this.catalogButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.catalogButton.Name = "catalogButton";
             this.catalogButton.Size = new System.Drawing.Size(484, 108);
             this.catalogButton.TabIndex = 1;
-            this.catalogButton.Text = "Catalog";
+            this.catalogButton.Text = "Create Catalog";
             this.catalogButton.UseVisualStyleBackColor = true;
             this.catalogButton.Click += new System.EventHandler(this.CatalogButton_Click);
             // 
             // previewButton
             // 
-            this.previewButton.Location = new System.Drawing.Point(524, 397);
+            this.previewButton.Location = new System.Drawing.Point(566, 575);
             this.previewButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.previewButton.Name = "previewButton";
             this.previewButton.Size = new System.Drawing.Size(484, 108);
             this.previewButton.TabIndex = 2;
-            this.previewButton.Text = "Preview";
+            this.previewButton.Text = "View Catalog";
             this.previewButton.UseVisualStyleBackColor = true;
             this.previewButton.Click += new System.EventHandler(this.PreviewButton_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(566, 98);
+            this.button1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(484, 108);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "Rasterize Originals";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.RasterizeOriginalButton_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1686, 845);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.previewButton);
             this.Controls.Add(this.catalogButton);
             this.Controls.Add(this.rasterizeButton);
@@ -89,6 +102,7 @@
         private System.Windows.Forms.Button rasterizeButton;
         private System.Windows.Forms.Button catalogButton;
         private System.Windows.Forms.Button previewButton;
+        private System.Windows.Forms.Button button1;
     }
 }
 

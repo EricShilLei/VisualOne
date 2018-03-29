@@ -40,5 +40,10 @@ namespace VisualOne
             var catalogForm = new CatalogForm(m_catalog);
             catalogForm.Show(this);
         }
+
+        private void RasterizeOriginalButton_Click(object sender, EventArgs e)
+        {
+            m_catalog.RasterizeOriginals();
+        }
     }
 }
