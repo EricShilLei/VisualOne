@@ -28,7 +28,11 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.CatalogGridView = new System.Windows.Forms.DataGridView();
+            this.catalogGridContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.duplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.blueprintPreviewPictureBox = new System.Windows.Forms.PictureBox();
             this.leftRightSplitterContainer = new System.Windows.Forms.SplitContainer();
             this.previewTabControl = new System.Windows.Forms.TabControl();
@@ -36,6 +40,10 @@
             this.originalLayoutPage = new System.Windows.Forms.TabPage();
             this.originalPictureBox = new System.Windows.Forms.PictureBox();
             this.searchPanel = new System.Windows.Forms.Panel();
+            this.label13 = new System.Windows.Forms.Label();
+            this.renderedRootTextbox = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
+            this.sourceRootTextbox = new System.Windows.Forms.TextBox();
             this.label12 = new System.Windows.Forms.Label();
             this.keptLessThanValue = new System.Windows.Forms.TextBox();
             this.label11 = new System.Windows.Forms.Label();
@@ -66,7 +74,9 @@
             this.searchButton = new System.Windows.Forms.Button();
             this.queryBox = new System.Windows.Forms.TextBox();
             this.topBottomSplitterContainer = new System.Windows.Forms.SplitContainer();
+            this.sourceFolderBrowserDialog = new System.Windows.Forms.FolderBrowserDialog();
             ((System.ComponentModel.ISupportInitialize)(this.CatalogGridView)).BeginInit();
+            this.catalogGridContextMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.blueprintPreviewPictureBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.leftRightSplitterContainer)).BeginInit();
             this.leftRightSplitterContainer.Panel1.SuspendLayout();
@@ -89,6 +99,7 @@
             this.CatalogGridView.AllowUserToDeleteRows = false;
             this.CatalogGridView.AllowUserToResizeRows = false;
             this.CatalogGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.CatalogGridView.ContextMenuStrip = this.catalogGridContextMenuStrip;
             this.CatalogGridView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.CatalogGridView.Location = new System.Drawing.Point(0, 0);
             this.CatalogGridView.MultiSelect = false;
@@ -97,19 +108,45 @@
             this.CatalogGridView.RowHeadersVisible = false;
             this.CatalogGridView.RowTemplate.Height = 33;
             this.CatalogGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.CatalogGridView.Size = new System.Drawing.Size(780, 1400);
+            this.CatalogGridView.Size = new System.Drawing.Size(911, 1400);
             this.CatalogGridView.TabIndex = 0;
             this.CatalogGridView.RowStateChanged += new System.Windows.Forms.DataGridViewRowStateChangedEventHandler(this.CatalogGridView_RowStateChanged);
             // 
+            // catalogGridContextMenuStrip
+            // 
+            this.catalogGridContextMenuStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
+            this.catalogGridContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.editToolStripMenuItem,
+            this.duplicateToolStripMenuItem});
+            this.catalogGridContextMenuStrip.Name = "catalogGridContextMenuStrip";
+            this.catalogGridContextMenuStrip.Size = new System.Drawing.Size(192, 76);
+            // 
+            // editToolStripMenuItem
+            // 
+            this.editToolStripMenuItem.Name = "editToolStripMenuItem";
+            this.editToolStripMenuItem.Size = new System.Drawing.Size(191, 36);
+            this.editToolStripMenuItem.Text = "Examine";
+            this.editToolStripMenuItem.Click += new System.EventHandler(this.ExamineToolStripMenuItem_Click);
+            // 
+            // duplicateToolStripMenuItem
+            // 
+            this.duplicateToolStripMenuItem.Name = "duplicateToolStripMenuItem";
+            this.duplicateToolStripMenuItem.Size = new System.Drawing.Size(191, 36);
+            this.duplicateToolStripMenuItem.Text = "Duplicate";
+            this.duplicateToolStripMenuItem.Click += new System.EventHandler(this.DuplicateToolStripMenuItem_Click);
+            // 
             // blueprintPreviewPictureBox
             // 
+            this.blueprintPreviewPictureBox.BackColor = System.Drawing.Color.LightGray;
+            this.blueprintPreviewPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.blueprintPreviewPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.blueprintPreviewPictureBox.Location = new System.Drawing.Point(3, 3);
             this.blueprintPreviewPictureBox.Name = "blueprintPreviewPictureBox";
-            this.blueprintPreviewPictureBox.Size = new System.Drawing.Size(1538, 1347);
+            this.blueprintPreviewPictureBox.Size = new System.Drawing.Size(1803, 1347);
             this.blueprintPreviewPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.blueprintPreviewPictureBox.TabIndex = 2;
             this.blueprintPreviewPictureBox.TabStop = false;
+            this.blueprintPreviewPictureBox.DoubleClick += new System.EventHandler(this.BlueprintPreviewPictureBox_DoubleClick);
             // 
             // leftRightSplitterContainer
             // 
@@ -124,8 +161,8 @@
             // leftRightSplitterContainer.Panel2
             // 
             this.leftRightSplitterContainer.Panel2.Controls.Add(this.previewTabControl);
-            this.leftRightSplitterContainer.Size = new System.Drawing.Size(2344, 1400);
-            this.leftRightSplitterContainer.SplitterDistance = 780;
+            this.leftRightSplitterContainer.Size = new System.Drawing.Size(2740, 1400);
+            this.leftRightSplitterContainer.SplitterDistance = 911;
             this.leftRightSplitterContainer.TabIndex = 3;
             // 
             // previewTabControl
@@ -136,7 +173,7 @@
             this.previewTabControl.Location = new System.Drawing.Point(0, 0);
             this.previewTabControl.Name = "previewTabControl";
             this.previewTabControl.SelectedIndex = 0;
-            this.previewTabControl.Size = new System.Drawing.Size(1560, 1400);
+            this.previewTabControl.Size = new System.Drawing.Size(1825, 1400);
             this.previewTabControl.TabIndex = 3;
             // 
             // bluePrintTab
@@ -145,7 +182,7 @@
             this.bluePrintTab.Location = new System.Drawing.Point(8, 39);
             this.bluePrintTab.Name = "bluePrintTab";
             this.bluePrintTab.Padding = new System.Windows.Forms.Padding(3);
-            this.bluePrintTab.Size = new System.Drawing.Size(1544, 1353);
+            this.bluePrintTab.Size = new System.Drawing.Size(1809, 1353);
             this.bluePrintTab.TabIndex = 0;
             this.bluePrintTab.Text = "blue print";
             this.bluePrintTab.UseVisualStyleBackColor = true;
@@ -156,17 +193,19 @@
             this.originalLayoutPage.Location = new System.Drawing.Point(8, 39);
             this.originalLayoutPage.Name = "originalLayoutPage";
             this.originalLayoutPage.Padding = new System.Windows.Forms.Padding(3);
-            this.originalLayoutPage.Size = new System.Drawing.Size(1544, 1353);
+            this.originalLayoutPage.Size = new System.Drawing.Size(1809, 1353);
             this.originalLayoutPage.TabIndex = 1;
             this.originalLayoutPage.Text = "original";
             this.originalLayoutPage.UseVisualStyleBackColor = true;
             // 
             // originalPictureBox
             // 
+            this.originalPictureBox.BackColor = System.Drawing.Color.LightGray;
+            this.originalPictureBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.originalPictureBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.originalPictureBox.Location = new System.Drawing.Point(3, 3);
             this.originalPictureBox.Name = "originalPictureBox";
-            this.originalPictureBox.Size = new System.Drawing.Size(1538, 1347);
+            this.originalPictureBox.Size = new System.Drawing.Size(1803, 1347);
             this.originalPictureBox.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.originalPictureBox.TabIndex = 3;
             this.originalPictureBox.TabStop = false;
@@ -174,6 +213,10 @@
             // searchPanel
             // 
             this.searchPanel.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.searchPanel.Controls.Add(this.label13);
+            this.searchPanel.Controls.Add(this.renderedRootTextbox);
+            this.searchPanel.Controls.Add(this.label14);
+            this.searchPanel.Controls.Add(this.sourceRootTextbox);
             this.searchPanel.Controls.Add(this.label12);
             this.searchPanel.Controls.Add(this.keptLessThanValue);
             this.searchPanel.Controls.Add(this.label11);
@@ -206,8 +249,50 @@
             this.searchPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.searchPanel.Location = new System.Drawing.Point(0, 0);
             this.searchPanel.Name = "searchPanel";
-            this.searchPanel.Size = new System.Drawing.Size(2344, 260);
+            this.searchPanel.Size = new System.Drawing.Size(2740, 260);
             this.searchPanel.TabIndex = 4;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label13.Location = new System.Drawing.Point(1735, 65);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(106, 25);
+            this.label13.TabIndex = 37;
+            this.label13.Text = "rendered";
+            // 
+            // renderedRootTextbox
+            // 
+            this.renderedRootTextbox.BackColor = System.Drawing.SystemColors.ButtonShadow;
+            this.renderedRootTextbox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.renderedRootTextbox.Enabled = false;
+            this.renderedRootTextbox.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.renderedRootTextbox.Location = new System.Drawing.Point(1849, 66);
+            this.renderedRootTextbox.Name = "renderedRootTextbox";
+            this.renderedRootTextbox.Size = new System.Drawing.Size(350, 24);
+            this.renderedRootTextbox.TabIndex = 36;
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label14.Location = new System.Drawing.Point(1758, 22);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(83, 25);
+            this.label14.TabIndex = 35;
+            this.label14.Text = "source";
+            // 
+            // sourceRootTextbox
+            // 
+            this.sourceRootTextbox.BackColor = System.Drawing.SystemColors.ButtonShadow;
+            this.sourceRootTextbox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.sourceRootTextbox.Enabled = false;
+            this.sourceRootTextbox.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.sourceRootTextbox.Location = new System.Drawing.Point(1849, 23);
+            this.sourceRootTextbox.Name = "sourceRootTextbox";
+            this.sourceRootTextbox.Size = new System.Drawing.Size(350, 24);
+            this.sourceRootTextbox.TabIndex = 34;
             // 
             // label12
             // 
@@ -249,7 +334,7 @@
             // 
             this.label9.AutoSize = true;
             this.label9.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label9.Location = new System.Drawing.Point(1744, 67);
+            this.label9.Location = new System.Drawing.Point(1749, 166);
             this.label9.Name = "label9";
             this.label9.Size = new System.Drawing.Size(92, 25);
             this.label9.TabIndex = 29;
@@ -257,10 +342,11 @@
             // 
             // inFilterBluePrintsCount
             // 
-            this.inFilterBluePrintsCount.BackColor = System.Drawing.SystemColors.MenuHighlight;
+            this.inFilterBluePrintsCount.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.inFilterBluePrintsCount.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.inFilterBluePrintsCount.Enabled = false;
-            this.inFilterBluePrintsCount.Location = new System.Drawing.Point(1844, 63);
+            this.inFilterBluePrintsCount.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.inFilterBluePrintsCount.Location = new System.Drawing.Point(1849, 166);
             this.inFilterBluePrintsCount.Name = "inFilterBluePrintsCount";
             this.inFilterBluePrintsCount.Size = new System.Drawing.Size(200, 24);
             this.inFilterBluePrintsCount.TabIndex = 28;
@@ -269,18 +355,19 @@
             // 
             this.label10.AutoSize = true;
             this.label10.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.875F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label10.Location = new System.Drawing.Point(1771, 23);
+            this.label10.Location = new System.Drawing.Point(1797, 123);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(65, 25);
+            this.label10.Size = new System.Drawing.Size(44, 25);
             this.label10.TabIndex = 27;
-            this.label10.Text = "total:";
+            this.label10.Text = "all:";
             // 
             // totalBluePrintsCount
             // 
-            this.totalBluePrintsCount.BackColor = System.Drawing.SystemColors.MenuHighlight;
+            this.totalBluePrintsCount.BackColor = System.Drawing.SystemColors.ButtonShadow;
             this.totalBluePrintsCount.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.totalBluePrintsCount.Enabled = false;
-            this.totalBluePrintsCount.Location = new System.Drawing.Point(1844, 20);
+            this.totalBluePrintsCount.ForeColor = System.Drawing.SystemColors.Highlight;
+            this.totalBluePrintsCount.Location = new System.Drawing.Point(1849, 123);
             this.totalBluePrintsCount.Name = "totalBluePrintsCount";
             this.totalBluePrintsCount.Size = new System.Drawing.Size(200, 24);
             this.totalBluePrintsCount.TabIndex = 26;
@@ -486,19 +573,25 @@
             // topBottomSplitterContainer.Panel2
             // 
             this.topBottomSplitterContainer.Panel2.Controls.Add(this.leftRightSplitterContainer);
-            this.topBottomSplitterContainer.Size = new System.Drawing.Size(2344, 1664);
+            this.topBottomSplitterContainer.Size = new System.Drawing.Size(2740, 1664);
             this.topBottomSplitterContainer.SplitterDistance = 260;
             this.topBottomSplitterContainer.TabIndex = 5;
+            // 
+            // sourceFolderBrowserDialog
+            // 
+            this.sourceFolderBrowserDialog.Description = "Pick the folder that contains the blueprints";
+            this.sourceFolderBrowserDialog.ShowNewFolderButton = false;
             // 
             // CatalogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(2344, 1664);
+            this.ClientSize = new System.Drawing.Size(2740, 1664);
             this.Controls.Add(this.topBottomSplitterContainer);
             this.Name = "CatalogForm";
             this.Text = "CatalogForm";
             ((System.ComponentModel.ISupportInitialize)(this.CatalogGridView)).EndInit();
+            this.catalogGridContextMenuStrip.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.blueprintPreviewPictureBox)).EndInit();
             this.leftRightSplitterContainer.Panel1.ResumeLayout(false);
             this.leftRightSplitterContainer.Panel2.ResumeLayout(false);
@@ -558,5 +651,13 @@
         private System.Windows.Forms.TextBox keptLessThanValue;
         private System.Windows.Forms.Label label11;
         private System.Windows.Forms.TextBox seenGreatThanValue;
+        private System.Windows.Forms.FolderBrowserDialog sourceFolderBrowserDialog;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.TextBox renderedRootTextbox;
+        private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.TextBox sourceRootTextbox;
+        private System.Windows.Forms.ContextMenuStrip catalogGridContextMenuStrip;
+        private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem duplicateToolStripMenuItem;
     }
 }

@@ -28,11 +28,20 @@ namespace VisualOne
             InitializeComponent();
             if (catalog == null)
             {
-                Catalog = new CatalogClass();
+                this.sourceFolderBrowserDialog.ShowDialog(this);
+                string sourceRoot = this.sourceFolderBrowserDialog.SelectedPath;
+                this.sourceFolderBrowserDialog.Description = "Pick the rendered thumbnails folder";
+                this.sourceFolderBrowserDialog.ShowDialog(this);
+                string outputRoot = this.sourceFolderBrowserDialog.SelectedPath;
+                Catalog = new CatalogClass(sourceRoot, outputRoot);
                 Catalog.CreateCatalog();
+
             }
             else
                 Catalog = catalog;
+            this.sourceRootTextbox.Text = Catalog.SourceRoot;
+            this.renderedRootTextbox.Text = Catalog.RenderedRoot;
+
             var source = new BindingSource();
             m_bluePrintsView = new BindingListView<BluePrint>(Catalog.m_bluePrints);
             source.DataSource = m_bluePrintsView;
@@ -202,6 +211,26 @@ namespace VisualOne
                 this.keptLessThan = UInt32.MaxValue;
             else
                 this.keptLessThan = UInt32.Parse(box.Text);
+        }
+
+        private void BlueprintPreviewPictureBox_DoubleClick(object sender, EventArgs e)
+        {
+            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
+            Catalog.OpenBP(bpWrapper.Object);
+        }
+
+        private void DuplicateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
+            var thmxSelectorControl = new ThemeSelectorForm(Catalog.m_sourcesFor01_1Photo, Catalog.RenderedRoot);
+            thmxSelectorControl.ShowDialog(this);
+            Catalog.DuplicateBPTo(bpWrapper.Object, thmxSelectorControl.SelectedTheme);
+        }
+
+        private void ExamineToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
+            Catalog.OpenBP(bpWrapper.Object);
         }
     }
 }

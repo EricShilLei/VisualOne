@@ -45,5 +45,10 @@ namespace VisualOne
         {
             m_catalog.RasterizeOriginals();
         }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            m_catalog.UpdateCatalog();
+        }
     }
 }

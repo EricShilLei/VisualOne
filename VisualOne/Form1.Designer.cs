@@ -31,7 +31,7 @@
             this.rasterizeButton = new System.Windows.Forms.Button();
             this.catalogButton = new System.Windows.Forms.Button();
             this.previewButton = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.UpdateBlueprintsButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // rasterizeButton
@@ -69,23 +69,23 @@
             this.previewButton.UseVisualStyleBackColor = true;
             this.previewButton.Click += new System.EventHandler(this.PreviewButton_Click);
             // 
-            // button1
+            // UpdateBlueprintsButton
             // 
-            this.button1.Location = new System.Drawing.Point(566, 98);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(484, 108);
-            this.button1.TabIndex = 3;
-            this.button1.Text = "Rasterize Originals";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.RasterizeOriginalButton_Click);
+            this.UpdateBlueprintsButton.Location = new System.Drawing.Point(566, 98);
+            this.UpdateBlueprintsButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.UpdateBlueprintsButton.Name = "UpdateBlueprintsButton";
+            this.UpdateBlueprintsButton.Size = new System.Drawing.Size(484, 108);
+            this.UpdateBlueprintsButton.TabIndex = 4;
+            this.UpdateBlueprintsButton.Text = "Update Blueprints";
+            this.UpdateBlueprintsButton.UseVisualStyleBackColor = true;
+            this.UpdateBlueprintsButton.Click += new System.EventHandler(this.button2_Click);
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1686, 845);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.UpdateBlueprintsButton);
             this.Controls.Add(this.previewButton);
             this.Controls.Add(this.catalogButton);
             this.Controls.Add(this.rasterizeButton);
@@ -102,7 +102,7 @@
         private System.Windows.Forms.Button rasterizeButton;
         private System.Windows.Forms.Button catalogButton;
         private System.Windows.Forms.Button previewButton;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button UpdateBlueprintsButton;
     }
 }
 
