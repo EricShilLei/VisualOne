@@ -28,13 +28,13 @@ namespace VisualOne
             InitializeComponent();
             if (catalog == null)
             {
-                this.sourceFolderBrowserDialog.ShowDialog(this);
-                string sourceRoot = this.sourceFolderBrowserDialog.SelectedPath;
+                var folderBrowserResult = this.sourceFolderBrowserDialog.ShowDialog(this);
+                string sourceRoot = folderBrowserResult == DialogResult.OK ?  this.sourceFolderBrowserDialog.SelectedPath : null;
                 this.sourceFolderBrowserDialog.Description = "Pick the rendered thumbnails folder";
-                this.sourceFolderBrowserDialog.ShowDialog(this);
-                string outputRoot = this.sourceFolderBrowserDialog.SelectedPath;
+                folderBrowserResult = this.sourceFolderBrowserDialog.ShowDialog(this);
+                string outputRoot = folderBrowserResult == DialogResult.OK ? this.sourceFolderBrowserDialog.SelectedPath : null;
                 Catalog = new CatalogClass(sourceRoot, outputRoot);
-                Catalog.CreateCatalog();
+                Catalog.CreateCatalog(null);
 
             }
             else
@@ -49,6 +49,8 @@ namespace VisualOne
             this.CatalogGridView.DataSource = source;
             this.totalBluePrintsCount.Text = this.CatalogGridView.Rows.Count.ToString();
             this.inFilterBluePrintsCount.Text = this.CatalogGridView.Rows.Count.ToString();
+            this.toolStripStatusLabelSource.Text = Catalog.SourceRoot;
+            this.toolStripStatusLabelRendered.Text = Catalog.RenderedRoot;
         }
 
         private void SearchButton_Click(object sender, EventArgs e)
@@ -231,6 +233,32 @@ namespace VisualOne
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
             Catalog.OpenBP(bpWrapper.Object);
+        }
+
+        private void ApplyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
+            Catalog.DuplicateBPToCurrentPresentation(bpWrapper.Object);
+        }
+
+        private void CatalogGridView_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
+            Catalog.OpenBP(bpWrapper.Object);
+        }
+
+        private void PopulateFiltersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
+            var bp = bpWrapper.Object;
+            this.typeFilter.Text = bp.type;
+            this.hasTypeFilter = true;
+            this.sourceFilter.Text = bp.source;
+            this.hasSourceFilter = true;
+            this.cropFilter.Text = bp.cropNonCrop;
+            this.hasCropFilter = true;
+            this.layoutFilter.Text = bp.layout;
+            this.hasLayoutFilter = true;
         }
     }
 }

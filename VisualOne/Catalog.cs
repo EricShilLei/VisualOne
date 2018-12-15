@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 using PPT = Microsoft.Office.Interop.PowerPoint;
 using MSO = Microsoft.Office.Core;
+using System.Windows.Forms;
+using System.Drawing.Imaging;
+using System.Drawing;
 
 namespace VisualOne
 {
@@ -15,20 +18,27 @@ namespace VisualOne
         public List<BluePrint> m_bluePrints = new List<BluePrint>();
         public List<string> m_sourcesFor01_1Photo = new List<string>();
 
-        private string m_sourceRoot = @"\\ppt-svc\Features\AutoLayout\DSNR\Blueprints\Active";
-        private string m_outputRoot = @"\\ppt-svc\Features\AutoLayout\CatalogTool\data\04-01\";
-        // private string m_sourceRoot = @"c:\users\dzhang\desktop\Active";
-        // private string m_outputRoot = @"c:\Rendered\Active\";
+
+        // private string m_sourceRoot = @"\\ppt-svc\Features\AutoLayout\DSNR\Blueprints\Active";
+        // private string m_outputRoot = @"\\ppt-svc\Features\AutoLayout\CatalogTool\data\04-01\";
+#pragma warning disable IDE0044 // Add readonly modifier
+        private string m_sourceRoot = @"c:\users\dzhang\desktop\Active";
+        private string m_outputRoot = @"c:\Rendered\Active\";
+#pragma warning restore IDE0044 // Add readonly modifier
 
         public string SourceRoot { get { return m_sourceRoot; } }
         public string RenderedRoot { get { return m_outputRoot; } }
 
         public CatalogClass(string sourceRoot, string outputRoot)
         {
-            this.m_sourceRoot = sourceRoot;
-            this.m_outputRoot = outputRoot;
-            if (!outputRoot.EndsWith("\\"))
-                this.m_outputRoot += "\\";
+            if( sourceRoot != null)
+                this.m_sourceRoot = sourceRoot;
+            if( outputRoot != null)
+            {
+                this.m_outputRoot = outputRoot;
+                if (!outputRoot.EndsWith("\\"))
+                    this.m_outputRoot += "\\";
+            }
         }
 
         public CatalogClass()
@@ -53,9 +63,11 @@ namespace VisualOne
                     UInt32 keptCount = UInt32.Parse(kept);
                     if (keptCount > seenCount)
                         throw new ArgumentOutOfRangeException();
-                    TempSeenKeptRecord record = new TempSeenKeptRecord();
-                    record.seen = seenCount;
-                    record.kept = keptCount;
+                    TempSeenKeptRecord record = new TempSeenKeptRecord
+                    {
+                        seen = seenCount,
+                        kept = keptCount
+                    };
                     performanceValues.Add(guid, record);
                 }
                 catch (Exception e)
@@ -65,8 +77,69 @@ namespace VisualOne
             }
         }
 
-        private void ChangeGuid(PPT.Slide newSlide)
+        internal void ResizeRendering(string resizedOutputDir, bool fGrayscale, bool fPng)
         {
+            string directory = this.RenderedRoot;
+            var pngFiles = Directory.EnumerateFiles(directory, "*.png", SearchOption.AllDirectories);
+            var _32x18_Image = new System.Drawing.Bitmap(32, 18);
+            var _128x72_Image = new System.Drawing.Bitmap(128, 72);
+            System.Drawing.Image sourceImage;
+            //create the grayscale ColorMatrix
+            ColorMatrix colorMatrix = new ColorMatrix(
+               new float[][]
+               {
+                         new float[] {.3f, .3f, .3f, 0, 0},
+                         new float[] {.59f, .59f, .59f, 0, 0},
+                         new float[] {.11f, .11f, .11f, 0, 0},
+                         new float[] {0, 0, 0, 1, 0},
+                         new float[] {0, 0, 0, 0, 1}
+               });
+
+            //create some image attributes
+            ImageAttributes attributes = new ImageAttributes();
+
+            //set the color matrix attribute
+            attributes.SetColorMatrix(colorMatrix);
+
+            foreach (string currentFile in pngFiles)
+            {
+                int lastSlash = currentFile.LastIndexOf('\\');
+                string fileName = currentFile.Substring(lastSlash + 1);
+                if (fileName == "original.png")
+                    continue;
+                string outputFileName = fileName;
+                if (!fPng)
+                    outputFileName = outputFileName.Replace("png", "jpg");
+                string _32x18_FilePath = resizedOutputDir + "\\32x18\\" + outputFileName;
+                string _128x72_FilePath = resizedOutputDir + "\\128x72\\" + outputFileName;
+                if(File.Exists(_32x18_FilePath) && File.Exists(_128x72_FilePath))
+                    continue;
+                sourceImage = System.Drawing.Image.FromFile(currentFile);
+                Rectangle _32x12_destRect = new Rectangle(0, 0, 32, 18);
+                Rectangle _128x72_destRect = new Rectangle(0, 0, 128, 72);
+
+                using (var g = System.Drawing.Graphics.FromImage(_32x18_Image))
+                {
+                    if(fGrayscale)
+                        g.DrawImage(sourceImage, _32x12_destRect, 0, 0, sourceImage.Width, sourceImage.Height, GraphicsUnit.Pixel, attributes);
+                    else
+                        g.DrawImage(sourceImage, 0, 0, 32, 18);
+                }
+                _32x18_Image.Save(_32x18_FilePath, fPng ? ImageFormat.Png : ImageFormat.Jpeg);
+                using (var g = System.Drawing.Graphics.FromImage(_128x72_Image))
+                {
+                    if (fGrayscale)
+                        g.DrawImage(sourceImage, _128x72_destRect, 0, 0, sourceImage.Width, sourceImage.Height, GraphicsUnit.Pixel, attributes);
+                    else
+                        g.DrawImage(sourceImage, 0, 0, 128, 72);
+                }
+                _128x72_Image.Save(_128x72_FilePath, fPng ? ImageFormat.Png : ImageFormat.Jpeg);
+                sourceImage.Dispose();
+            }
+        }
+
+        private void ChangeGuid(PPT.Slide newSlide)
+         {
             foreach (PPT.Shape sp in newSlide.NotesPage.Shapes)
             {
                 if (sp.HasTextFrame == MSO.MsoTriState.msoTrue)
@@ -152,6 +225,55 @@ namespace VisualOne
             }
         }
 
+        internal void DuplicateBPToCurrentPresentation(BluePrint bp)
+        {
+            var pptApp = new PPT.Application();
+            string sourcePath = m_sourceRoot + "\\" + bp.layout + "\\" + bp.type + "\\" + bp.cropNonCrop + "\\" + bp.aspectRaio + "\\" + bp.source;
+            PPT.Presentation targetPres = pptApp.Presentations[1];
+            PPT.Presentation sourcePres = pptApp.Presentations.Open(sourcePath,
+                                                                    MSO.MsoTriState.msoTrue,
+                                                                    MSO.MsoTriState.msoFalse,
+                                                                    MSO.MsoTriState.msoFalse);
+            float sourceSlideHeight = sourcePres.PageSetup.SlideHeight;
+            float sourceSlideWidth = sourcePres.PageSetup.SlideWidth;
+            float targetSlideCenterY = targetPres.PageSetup.SlideHeight / 2;
+            float targetSlideCenterX = targetPres.PageSetup.SlideWidth / 2;
+
+            float vResizeRatio = (sourceSlideWidth / sourceSlideHeight)/ (targetSlideCenterX / targetSlideCenterY);
+
+            // Find the exact blueprint slide
+            foreach (PPT.Slide sld in sourcePres.Slides)
+            {
+                // Paste over to target presentation
+                sld.Select();
+                sld.Copy();
+                var newSlides = targetPres.Slides.Paste();
+                PPT.Slide newSlide = newSlides[1];
+                foreach (PPT.Shape shape in newSlide.Shapes)
+                {
+                    float centerX = shape.Left + shape.Width / 2;
+                    float centerY = shape.Top + shape.Height / 2;
+                    float newY = (centerY - targetSlideCenterY) * vResizeRatio + targetSlideCenterY;
+                    float newHeight = shape.Height;
+                    if (shape.Type == MSO.MsoShapeType.msoAutoShape && shape.AutoShapeType == MSO.MsoAutoShapeType.msoShapeRectangle)
+                        newHeight = shape.Height * vResizeRatio;
+                    else if (shape.Type == MSO.MsoShapeType.msoTextBox)
+                        newHeight = shape.Height * vResizeRatio;
+                    else if (shape.Type == MSO.MsoShapeType.msoGroup)
+                        newHeight = shape.Height * vResizeRatio;
+//                    else if (shape.Type == MSO.MsoShapeType.msoPicture)
+//                        newHeight = shape.Height * vResizeRatio;
+                    else if (shape.Type == MSO.MsoShapeType.msoPlaceholder)
+                        newHeight = shape.Height * vResizeRatio;
+                    shape.Top = newY - newHeight / 2;
+                    shape.Height = newHeight;
+                }
+                // Change GUID of the target slide
+                ChangeGuid(newSlide);
+            }
+            sourcePres.Close();
+        }
+
         public void RasterizeOriginals()
         {
             var pptApp = new PPT.Application();
@@ -233,16 +355,21 @@ namespace VisualOne
             }
         }
 
-        public void CreateCatalog()
+        public void CreateCatalog(ProgressBar progressBar)
         {
             string directory = m_sourceRoot;
             var pptxFiles = Directory.EnumerateFiles(directory, "*.pptx", SearchOption.AllDirectories);
             Dictionary<string, TempSeenKeptRecord> performanceValues = new Dictionary<string, TempSeenKeptRecord>();
             ReadPerformanceSummary(performanceValues);
-
+            int pptxCount = 0;
+            if (progressBar != null)
+                progressBar.Maximum = pptxFiles.Count();
             m_bluePrints.Clear();
             foreach (string currentFile in pptxFiles)
             {
+                pptxCount++;
+                if (progressBar != null)
+                    progressBar.Value = pptxCount;
                 string fileName = currentFile.Substring(directory.Length + 1);
                 string[] segments = fileName.Split('\\');
                 string layout = segments[0];
@@ -269,15 +396,17 @@ namespace VisualOne
                         string bluePrintGuid = properties[0].Substring(3);
                         if (pngFiles.Contains(outputPath + bluePrintGuid + ".png"))
                         {
-                            BluePrint bp = new BluePrint();
-                            bp.source = path;
-                            bp.layout = layout;
-                            bp.type = type;
-                            bp.aspectRaio = aspect;
-                            bp.cropNonCrop = crop;
-                            bp.guid = bluePrintGuid;
-                            bp.otherProperties = properties;
-                            bp.path = outputPath + bluePrintGuid + ".png";
+                            BluePrint bp = new BluePrint
+                            {
+                                source = path,
+                                layout = layout,
+                                type = type,
+                                aspectRaio = aspect,
+                                cropNonCrop = crop,
+                                guid = bluePrintGuid,
+                                otherProperties = properties,
+                                path = outputPath + bluePrintGuid + ".png"
+                            };
                             foreach (string property in properties)
                             {
                                 if (property.StartsWith("Variant="))
