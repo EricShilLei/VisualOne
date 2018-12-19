@@ -235,6 +235,7 @@ namespace VisualOne
             Catalog.OpenBP(bpWrapper.Object);
         }
 
+        // Commenting
         private void ApplyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
