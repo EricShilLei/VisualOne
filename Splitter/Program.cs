@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Threading.Tasks;
 
 namespace Splitter
 {
@@ -17,15 +16,16 @@ namespace Splitter
         private Package m_originalPackage;
         private ArrayList m_pptParts = new ArrayList();
         private string m_handoutMasterTarget = null;
+        private string m_notesMasterTarget = null;
 
         private Package m_outputPackage;
         private ArrayList m_skipParts = new ArrayList();
         private ArrayList m_partsReferencedBySlide = new ArrayList();
-        private Dictionary<string, string> m_slideTargets = new Dictionary<string, string>();
         private int m_slideId = -1;
         private Guid m_selectedBPGuid = Guid.Empty;
         private string m_slideTargetRelId = null;
         private string m_layoutTargetRelId = null;
+        private string m_masterTargetRelId = null;
         private string m_selectedSlideLayoutTarget = null;
         private string m_selectedSlideMasterTarget = null;
         private string m_selectedSlideNotesTarget = null;
@@ -40,9 +40,12 @@ namespace Splitter
         static private string s_relTypePptMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster";
         static private string s_relTypeThumbnail = @"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail";
         static private string s_relTypePptHandoutMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/handoutMaster";
+        static private string s_relTypePptNotesMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster";
         #endregion
 
         public Dictionary<int, string> SlideRelIds { get; } = new Dictionary<int, string>();
+        public Dictionary<string, string> SlideTargets { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> MasterRelIds { get; } = new Dictionary<string, string>();
 
         #region helper APIs
         private void FlushAndClosePackage()
@@ -166,11 +169,19 @@ namespace Splitter
             {
                 if (relationship.Attributes["Type"].Value == s_relTypePptSlide)
                 {
-                    m_slideTargets[relationship.Attributes["Id"].Value] = @"/ppt/" + relationship.Attributes["Target"].Value;
+                    SlideTargets[relationship.Attributes["Id"].Value] = @"/ppt/" + relationship.Attributes["Target"].Value;
+                }
+                else if (relationship.Attributes["Type"].Value == s_relTypePptMaster)
+                {
+                    MasterRelIds[@"/ppt/" + relationship.Attributes["Target"].Value] = relationship.Attributes["Id"].Value;
                 }
                 else if(relationship.Attributes["Type"].Value == s_relTypePptHandoutMaster)
                 {
                     m_handoutMasterTarget = @"/ppt/" + relationship.Attributes["Target"].Value;
+                }
+                else if (relationship.Attributes["Type"].Value == s_relTypePptNotesMaster)
+                {
+                    m_notesMasterTarget = @"/ppt/" + relationship.Attributes["Target"].Value;
                 }
             }
 
@@ -202,10 +213,15 @@ namespace Splitter
             m_selectedSlideNotesTarget = null;
             m_slideTargetRelId = SlideRelIds[m_slideId];
 
-            string slideTarget = m_slideTargets[m_slideTargetRelId];
+            string slideTarget = SlideTargets[m_slideTargetRelId];
             string slideRels = RelsPathFromTarget(slideTarget);
             m_partsReferencedBySlide.Add(s_pathPrentationXmlRels);
-            if(m_handoutMasterTarget != null)
+            if(m_notesMasterTarget != null)
+            {
+                m_partsReferencedBySlide.Add(m_notesMasterTarget);
+                m_partsReferencedBySlide.Add(RelsPathFromTarget(m_notesMasterTarget));
+            }
+            if (m_handoutMasterTarget != null)
             {
                 m_partsReferencedBySlide.Add(m_handoutMasterTarget);
                 m_partsReferencedBySlide.Add(RelsPathFromTarget(m_handoutMasterTarget));
@@ -217,6 +233,7 @@ namespace Splitter
             m_selectedBPGuid = LayoutGuid(m_selectedSlideNotesTarget);
             string layoutRels = RelsPathFromTarget(m_selectedSlideLayoutTarget);
             m_selectedSlideMasterTarget = TargetOfRel(layoutRels, s_relTypePptMaster);
+            m_masterTargetRelId = MasterRelIds[m_selectedSlideMasterTarget];
             m_partsReferencedBySlide.Add(m_selectedSlideLayoutTarget);
             m_partsReferencedBySlide.Add(layoutRels);
             string masterRels = RelsPathFromTarget(m_selectedSlideMasterTarget);
@@ -259,6 +276,8 @@ namespace Splitter
             relsList.Add(relsPath);
             if (m_handoutMasterTarget != null)
                 relsList.Add(RelsPathFromTarget(m_handoutMasterTarget));
+            if (m_notesMasterTarget != null)
+                relsList.Add(RelsPathFromTarget(m_notesMasterTarget));
             int index = 0;
             while(index < relsList.Count)
             {
@@ -294,6 +313,11 @@ namespace Splitter
                 if (relationship.Attributes["Type"].Value == s_relTypePptSlide)
                 {
                     if (relationship.Attributes["Id"].Value != m_slideTargetRelId)
+                        nodesToBeRemoved.Add(relationship);
+                }
+                else if(relationship.Attributes["Type"].Value == s_relTypePptMaster)
+                {
+                    if (relationship.Attributes["Id"].Value != m_masterTargetRelId)
                         nodesToBeRemoved.Add(relationship);
                 }
             }
@@ -332,24 +356,39 @@ namespace Splitter
             doc.Load(part.GetStream());
             XmlNode presentation = doc.ChildNodes[1];
             XmlNode sldIdLst = null;
+            XmlNode masterIdLst = null;
             foreach (XmlNode node in presentation.ChildNodes)
             {
                 if (node.Name == "p:sldIdLst")
                 {
                     sldIdLst = node;
-                    break;
+                }
+                else if (node.Name == "p:sldMasterIdLst")
+                {
+                    masterIdLst = node;
                 }
             }
-            ArrayList sldIdNodesToBeRemoved = new ArrayList();
+            ArrayList toBeRemoved = new ArrayList();
             foreach (XmlNode sldId in sldIdLst.ChildNodes)
             {
                 if (int.Parse(sldId.Attributes["id"].Value) != m_slideId )
-                    sldIdNodesToBeRemoved.Add(sldId);
+                    toBeRemoved.Add(sldId);
             }
-            foreach (XmlNode sldId in sldIdNodesToBeRemoved)
+            foreach (XmlNode sldId in toBeRemoved)
             {
                 sldIdLst.RemoveChild(sldId);
             }
+            toBeRemoved.Clear();
+            foreach (XmlNode masterId in masterIdLst.ChildNodes)
+            {
+                if (masterId.Attributes["r:id"].Value != m_masterTargetRelId)
+                    toBeRemoved.Add(masterId);
+            }
+            foreach (XmlNode masterId in toBeRemoved)
+            {
+                masterIdLst.RemoveChild(masterId);
+            }
+
             return doc;
         }
 
@@ -475,10 +514,14 @@ namespace Splitter
         // C:\Users\dzhang\git\designer.blueprints\Blueprints\Active C:\Users\dzhang\Desktop\Clone\
         static void Main(string[] args)
         {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             if (Directory.Exists(args[0]))
                 RunOnDirectory(args[0], args[1]);
             else
                 RunOneFile(args[0], args[1]);
+            watch.Stop();
+            Console.WriteLine("Total Execution Time in ms: " + watch.ElapsedMilliseconds);
+            Console.WriteLine("Press any key ...");
             Console.ReadKey();
         }
     }
