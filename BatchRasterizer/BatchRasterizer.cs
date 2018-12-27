@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using PPT = Microsoft.Office.Interop.PowerPoint;
@@ -47,28 +48,53 @@ namespace BatchRasterizer
             List<string> failedFinalFiles = new List<string>();
             StreamWriter catalogWriter = File.CreateText(outputDir + "Failed.txt");
 
+            const int batchSize = 5;
+            int indexInBatch = 0;
             foreach (string currentFile in pptxFiles)
             {
+                bool fSaved = false;
                 try
                 {
                     RasterizeOne(pptApp, currentFile, directory, outputDir);
                     successFiles.Add(currentFile);
+                    fSaved = true;
+                    indexInBatch++;
+                    if( indexInBatch == batchSize)
+                    {
+                        indexInBatch = 0;
+                        pptApp.Quit();
+                        pptApp = null;
+                        pptApp = new PPT.Application();
+                    }
                 }
                 catch (Exception e)
                 {
-                    failedFiles.Add(currentFile);
+                    if(!fSaved)
+                        failedFiles.Add(currentFile);
                     Console.WriteLine(e.Message);
                     if ((uint)e.HResult == 0x0800706ba)
+                    {
                         pptApp = new PPT.Application();
+                        indexInBatch = 0;
+                    }
                 }
             }
 
+            indexInBatch = 0;
             foreach (string currentFile in failedFiles)
             {
                 try
                 {
                     RasterizeOne(pptApp, currentFile, directory, outputDir);
                     successFiles.Add(currentFile);
+                    indexInBatch++;
+                    if (indexInBatch == batchSize)
+                    {
+                        indexInBatch = 0;
+                        pptApp.Quit();
+                        Thread.Sleep(1000);
+                        pptApp = new PPT.Application();
+                    }
                 }
                 catch (Exception e)
                 {
