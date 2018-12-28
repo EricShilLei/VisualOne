@@ -34,7 +34,7 @@ namespace VisualOne
                 folderBrowserResult = this.sourceFolderBrowserDialog.ShowDialog(this);
                 string outputRoot = folderBrowserResult == DialogResult.OK ? this.sourceFolderBrowserDialog.SelectedPath : null;
                 Catalog = new CatalogClass(sourceRoot, outputRoot);
-                Catalog.CreateCatalog(null);
+                Catalog.ReadFlatCatalog();
 
             }
             else
@@ -85,19 +85,8 @@ namespace VisualOne
             {
                 var control = (DataGridView)sender;
                 ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)e.Row.DataBoundItem;
-                string imagePath = bpWrapper.Object.path;
+                string imagePath = bpWrapper.Object.pngPath;
                 this.blueprintPreviewPictureBox.Image = System.Drawing.Image.FromFile(imagePath);
-                int lastSlashIndex = imagePath.LastIndexOf('\\');
-                string originalPath = imagePath.Remove(lastSlashIndex + 1) + "original.png";
-                try
-                {
-                    this.originalPictureBox.Image = System.Drawing.Image.FromFile(originalPath);
-                }
-                catch( Exception ex)
-                {
-                    this.originalPictureBox.Image = null;
-                    Console.WriteLine(ex.Message);
-                }
             }
         }
 
@@ -221,14 +210,6 @@ namespace VisualOne
             Catalog.OpenBP(bpWrapper.Object);
         }
 
-        private void DuplicateToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            var thmxSelectorControl = new ThemeSelectorForm(Catalog.m_sourcesFor01_1Photo, Catalog.RenderedRoot);
-            thmxSelectorControl.ShowDialog(this);
-            Catalog.DuplicateBPTo(bpWrapper.Object, thmxSelectorControl.SelectedTheme);
-        }
-
         private void ExamineToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
@@ -238,7 +219,7 @@ namespace VisualOne
         private void ApplyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            Catalog.DuplicateBPToCurrentPresentation(bpWrapper.Object);
+            Catalog.DuplicateBPToActivePresentation(bpWrapper.Object);
         }
 
         private void CatalogGridView_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)

@@ -32,8 +32,8 @@
             this.CatalogGridView = new System.Windows.Forms.DataGridView();
             this.catalogGridContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.duplicateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.applyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.populateFiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.blueprintPreviewPictureBox = new System.Windows.Forms.PictureBox();
             this.leftRightSplitterContainer = new System.Windows.Forms.SplitContainer();
             this.previewTabControl = new System.Windows.Forms.TabControl();
@@ -81,7 +81,6 @@
             this.toolStripStatusLabelSource = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripStatusLabelRendered = new System.Windows.Forms.ToolStripStatusLabel();
-            this.populateFiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.CatalogGridView)).BeginInit();
             this.catalogGridContextMenuStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.blueprintPreviewPictureBox)).BeginInit();
@@ -126,11 +125,10 @@
             this.catalogGridContextMenuStrip.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.catalogGridContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.editToolStripMenuItem,
-            this.duplicateToolStripMenuItem,
             this.applyToolStripMenuItem,
             this.populateFiltersToolStripMenuItem});
             this.catalogGridContextMenuStrip.Name = "catalogGridContextMenuStrip";
-            this.catalogGridContextMenuStrip.Size = new System.Drawing.Size(301, 192);
+            this.catalogGridContextMenuStrip.Size = new System.Drawing.Size(301, 156);
             // 
             // editToolStripMenuItem
             // 
@@ -139,19 +137,19 @@
             this.editToolStripMenuItem.Text = "Examine";
             this.editToolStripMenuItem.Click += new System.EventHandler(this.ExamineToolStripMenuItem_Click);
             // 
-            // duplicateToolStripMenuItem
-            // 
-            this.duplicateToolStripMenuItem.Name = "duplicateToolStripMenuItem";
-            this.duplicateToolStripMenuItem.Size = new System.Drawing.Size(300, 36);
-            this.duplicateToolStripMenuItem.Text = "Duplicate";
-            this.duplicateToolStripMenuItem.Click += new System.EventHandler(this.DuplicateToolStripMenuItem_Click);
-            // 
             // applyToolStripMenuItem
             // 
             this.applyToolStripMenuItem.Name = "applyToolStripMenuItem";
             this.applyToolStripMenuItem.Size = new System.Drawing.Size(300, 36);
             this.applyToolStripMenuItem.Text = "Apply";
             this.applyToolStripMenuItem.Click += new System.EventHandler(this.ApplyToolStripMenuItem_Click);
+            // 
+            // populateFiltersToolStripMenuItem
+            // 
+            this.populateFiltersToolStripMenuItem.Name = "populateFiltersToolStripMenuItem";
+            this.populateFiltersToolStripMenuItem.Size = new System.Drawing.Size(300, 36);
+            this.populateFiltersToolStripMenuItem.Text = "Populate Filters";
+            this.populateFiltersToolStripMenuItem.Click += new System.EventHandler(this.PopulateFiltersToolStripMenuItem_Click);
             // 
             // blueprintPreviewPictureBox
             // 
@@ -638,13 +636,6 @@
             this.toolStripStatusLabelRendered.Size = new System.Drawing.Size(238, 32);
             this.toolStripStatusLabelRendered.Text = "toolStripStatusLabel4";
             // 
-            // populateFiltersToolStripMenuItem
-            // 
-            this.populateFiltersToolStripMenuItem.Name = "populateFiltersToolStripMenuItem";
-            this.populateFiltersToolStripMenuItem.Size = new System.Drawing.Size(300, 36);
-            this.populateFiltersToolStripMenuItem.Text = "Populate Filters";
-            this.populateFiltersToolStripMenuItem.Click += new System.EventHandler(this.PopulateFiltersToolStripMenuItem_Click);
-            // 
             // CatalogForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(12F, 25F);
@@ -725,7 +716,6 @@
         private System.Windows.Forms.TextBox sourceRootTextbox;
         private System.Windows.Forms.ContextMenuStrip catalogGridContextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem duplicateToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabelSource;

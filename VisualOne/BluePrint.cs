@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VisualOne
 {
@@ -28,7 +24,11 @@ namespace VisualOne
 
         public UInt32 seen { get; set; }
 
-        public string path;
+        public string pngPath;
+
+        public string flatPath;
+
+        public string originalPath;
 
         public string[] otherProperties;
     }
