@@ -15,6 +15,7 @@ namespace VisualOne
     public class CatalogClass
     {
         public List<BluePrint> m_bluePrints = new List<BluePrint>();
+        Dictionary<Guid, TempSeenKeptRecord> m_performanceValues = new Dictionary<Guid, TempSeenKeptRecord>();
 
 
         // private string m_sourceRoot = @"\\ppt-svc\Features\AutoLayout\DSNR\Blueprints\Active";
@@ -43,7 +44,7 @@ namespace VisualOne
             }
         }
 
-        private void ReadPerformanceSummary(Dictionary<string, TempSeenKeptRecord> performanceValues)
+        private void ReadPerformanceSummary()
         {
             StreamReader summaryReader = File.OpenText(RenderedRoot + "7day.txt");
             while (!summaryReader.EndOfStream)
@@ -52,7 +53,7 @@ namespace VisualOne
                 string[] segments = bpLine.Split('\t');
                 if (segments.Count() != 3)
                     continue;
-                string guid = segments[0];
+                string guidStr = segments[0];
                 string seen = segments[1];
                 string kept = segments[2];
                 try
@@ -66,7 +67,8 @@ namespace VisualOne
                         seen = seenCount,
                         kept = keptCount
                     };
-                    performanceValues.Add(guid, record);
+                    Guid guid = Guid.Parse(guidStr);
+                    m_performanceValues.Add(guid, record);
                 }
                 catch (Exception e)
                 {
@@ -114,7 +116,7 @@ namespace VisualOne
                             notesText = notesText.Replace('\r', '\n');      // Clean up
                             string[] properties = notesText.Split('\n');
                             string bluePrintGuid = properties[0].Substring(3);
-                            if(bluePrintGuid == bp.guid)
+                            if(bluePrintGuid == bp.guid.ToString())
                             {
                                 sld.Select();
                             }
@@ -214,12 +216,28 @@ namespace VisualOne
             }
         }
 
+        private void AllGuidsWithPngs(string[] pngFiles, HashSet<Guid> guids)
+        {
+            var renderedRootIndex = RenderedRoot.Length;
+            foreach(var path in pngFiles)
+            {
+                if (!path.StartsWith(RenderedRoot))
+                    continue;
+                string file = path.Substring(renderedRootIndex);
+                var dotIndex = file.IndexOf('.');
+                Guid guid;
+                if (dotIndex > 0 && Guid.TryParse(file.Substring(0, dotIndex), out guid))
+                    guids.Add(guid);
+            }
+        }
+
         public void ReadFlatCatalog()
         {
             string[] pngFiles = Directory.GetFiles(RenderedRoot, "*.png", SearchOption.TopDirectoryOnly);
+            HashSet<Guid> guidsWithPngs = new HashSet<Guid>();
+            AllGuidsWithPngs(pngFiles, guidsWithPngs);
             StreamReader catalogReader = File.OpenText(SourceRoot + "Catalog.txt");
-            Dictionary<string, TempSeenKeptRecord> performanceValues = new Dictionary<string, TempSeenKeptRecord>();
-            ReadPerformanceSummary(performanceValues);
+            ReadPerformanceSummary();
             int guidStringLength = Guid.Empty.ToString().Length;
             while (!catalogReader.EndOfStream)
             {
@@ -233,7 +251,9 @@ namespace VisualOne
                     continue;
                 }
 
-                string bluePrintGuid = bpLine.Substring(0, firstSpaceIndex);
+                Guid bluePrintGuid;
+                if(!Guid.TryParse( bpLine.Substring(0, firstSpaceIndex), out bluePrintGuid ))
+                    continue;
                 string original = bpLine.Substring(firstSpaceIndex + 1);
                 string[] segments = original.Split('\\');
                 string layout = segments[0];
@@ -243,7 +263,7 @@ namespace VisualOne
                 string path = segments[4];
                 string pngPath = RenderedRoot + bluePrintGuid + ".png";
                 string flatPptxPath = SourceRoot + bluePrintGuid + ".pptx";
-                if (pngFiles.Contains(pngPath))
+                if (guidsWithPngs.Contains(bluePrintGuid))
                 {
                     BluePrint bp = new BluePrint
                     {
@@ -257,10 +277,10 @@ namespace VisualOne
                         guid = bluePrintGuid,
                         pngPath = pngPath,
                     };
-                    if (performanceValues.ContainsKey(bluePrintGuid))
+                    if (m_performanceValues.ContainsKey(bluePrintGuid))
                     {
-                        bp.kept = performanceValues[bluePrintGuid].kept;
-                        bp.seen = performanceValues[bluePrintGuid].seen;
+                        bp.kept = m_performanceValues[bluePrintGuid].kept;
+                        bp.seen = m_performanceValues[bluePrintGuid].seen;
                         if (bp.seen > 0)
                             bp.keptRate = (double)bp.kept * 800 / bp.seen;
                     }

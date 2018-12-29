@@ -68,12 +68,15 @@ namespace VisualOne
 
         private int SearchWithGuid(string text)
         {
+            Guid selectedGuid;
+            if (!Guid.TryParse(text, out selectedGuid))
+                return -1;
             if (text == "")
                 return -1;
             foreach (DataGridViewRow row in this.CatalogGridView.Rows)
             {
                 ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)row.DataBoundItem;
-                if (bpWrapper.Object.guid.StartsWith(text))
+                if (bpWrapper.Object.guid == selectedGuid)
                     return row.Index;
             }
             return -1;

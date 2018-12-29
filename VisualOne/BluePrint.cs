@@ -4,7 +4,7 @@ namespace VisualOne
 {
     public class BluePrint
     {
-        public string guid { get; set; }
+        public Guid guid { get; set; }
 
         public string source { get; set; }
 
