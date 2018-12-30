@@ -3,15 +3,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Packaging;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
 namespace Splitter
 {
-    internal class BluePrint
+    internal class BluePrintParts
     {
         public int SlideId { get; set; } = -1;
         public Guid Guid { get; set; } = Guid.Empty;
@@ -30,26 +27,24 @@ namespace Splitter
         private Package m_outputPackage;
         private ArrayList m_skipParts = new ArrayList();
         private ArrayList m_partsReferencedBySlide = new ArrayList();
-        public  BluePrint CurrentBP { get; set; }  = null;
+        public  BluePrintParts CurrentBP { get; set; }  = null;
 
         #region static strings
-        static private string s_pathRels_Rels = RelsPathFromTarget("");
-        static private string s_pathPrentationXml = @"/ppt/presentation.xml";
-        static private string s_pathPrentationXmlRels = RelsPathFromTarget(s_pathPrentationXml);
-        static private string s_relTypePptSlide = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide";
-        static private string s_relTypePptNotes = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide";
-        static private string s_relTypePptLayout = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout";
-        static private string s_relTypePptMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster";
-        static private string s_relTypeThumbnail = @"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail";
-        static private string s_relTypePptHandoutMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/handoutMaster";
-        static private string s_relTypePptNotesMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster";
+        private static readonly string s_pathRels_Rels = RelsPathFromTarget("");
+        private static readonly string s_pathPrentationXml = @"/ppt/presentation.xml";
+        private static readonly string s_pathPrentationXmlRels = RelsPathFromTarget(s_pathPrentationXml);
+        private static readonly string s_relTypePptSlide = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide";
+        private static readonly string s_relTypePptNotes = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide";
+        private static readonly string s_relTypePptLayout = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout";
+        private static readonly string s_relTypePptMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster";
+        private static readonly string s_relTypeThumbnail = @"http://schemas.openxmlformats.org/package/2006/relationships/metadata/thumbnail";
+        private static readonly string s_relTypePptHandoutMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/handoutMaster";
+        private static readonly string s_relTypePptNotesMaster = @"http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster";
         #endregion
 
         public Dictionary<int, string> SlideRelIds { get; } = new Dictionary<int, string>();
         public Dictionary<string, string> SlideTargets { get; } = new Dictionary<string, string>();
         public Dictionary<string, string> MasterRelIds { get; } = new Dictionary<string, string>();
-        public string NotesMasterTarget { get => m_notesMasterTarget; }
-        public string HandoutMasterTarget { get => m_handoutMasterTarget; }
         public ArrayList PptParts { get; } = new ArrayList();
 
         private string m_handoutMasterTarget = null;
@@ -139,8 +134,10 @@ namespace Splitter
         {
             Uri uri = new Uri(notesSlidePath, UriKind.Relative);
             PackagePart part = m_originalPackage.GetPart(uri);
-            XmlDocument notesDoc = new XmlDocument();
-            notesDoc.PreserveWhitespace = true;
+            XmlDocument notesDoc = new XmlDocument
+            {
+                PreserveWhitespace = true
+            };
             notesDoc.Load(part.GetStream());
             XmlNodeList paragraphs = notesDoc.GetElementsByTagName("p", @"http://schemas.openxmlformats.org/drawingml/2006/main");
             string notesText = "";
@@ -156,9 +153,6 @@ namespace Splitter
                 {
                     if (line.StartsWith("ID="))
                     {
-                        //                if (notesText.Contains(@"0bc70563-41f8-4777-8988-6e9382451e8b"))
-                        //                    Console.WriteLine("found");
-                        //                 return Guid.Parse(properties[0].Substring(3, Guid.Empty.ToString().Length));
                         return Guid.Parse(line.Substring(3));
                     }
                 }
@@ -273,8 +267,10 @@ namespace Splitter
 
         private void AllPartsReferenced(string relsPath )
         {
-            ArrayList relsList = new ArrayList();
-            relsList.Add(relsPath);
+            ArrayList relsList = new ArrayList
+            {
+                relsPath
+            };
             if (m_handoutMasterTarget != null)
                 relsList.Add(RelsPathFromTarget(m_handoutMasterTarget));
             if (m_notesMasterTarget != null)
@@ -464,8 +460,11 @@ namespace Splitter
 
         public void OutputSlide(int slideId, string outputPath)
         {
-            CurrentBP = new BluePrint();
-            CurrentBP.SlideId = slideId;
+            CurrentBP = new BluePrintParts
+            {
+                SlideId = slideId,
+            };
+
             FillSkipList();
             if (CurrentBP.Guid == Guid.Empty)
                 return;

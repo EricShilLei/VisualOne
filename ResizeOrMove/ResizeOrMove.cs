@@ -18,8 +18,7 @@ namespace ResizeOrMove
             if (fileName == "original.png")
                 return Guid.Empty;
             int lastDot = fileName.LastIndexOf('.');
-            Guid bpGuid;
-            if (Guid.TryParse(fileName.Substring(0, lastDot), out bpGuid))
+            if (Guid.TryParse(fileName.Substring(0, lastDot), out Guid bpGuid))
                 return bpGuid;
             else
                 return Guid.Empty;
@@ -117,7 +116,7 @@ namespace ResizeOrMove
 
         static void Main(string[] args)
         {
-            MoveOriginal(args[0], args[1]);
+            Move(args[0], args[1]);
         }
     }
 }

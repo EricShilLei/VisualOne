@@ -2,24 +2,16 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using PPT = Microsoft.Office.Interop.PowerPoint;
 using MSO = Microsoft.Office.Core;
-using System.Windows.Forms;
-using System.Collections;
 
 namespace VisualOne
 {
     public class CatalogClass
     {
-        public List<BluePrint> m_bluePrints = new List<BluePrint>();
-        Dictionary<Guid, TempSeenKeptRecord> m_performanceValues = new Dictionary<Guid, TempSeenKeptRecord>();
+        public List<BluePrint> BluePrints { get; } = new List<BluePrint>();
 
-
-        // private string m_sourceRoot = @"\\ppt-svc\Features\AutoLayout\DSNR\Blueprints\Active";
-        // private string m_outputRoot = @"\\ppt-svc\Features\AutoLayout\CatalogTool\data\04-01\";
 #pragma warning disable IDE0044 // Add readonly modifier
         private string m_sourceRoot = @"c:\sample\";
         private string m_outputRoot = @"c:\flat.png\";
@@ -44,8 +36,10 @@ namespace VisualOne
             }
         }
 
-        private void ReadPerformanceSummary()
+        private void ReadPerformanceSummary(Dictionary<Guid, TempSeenKeptRecord> performanceValues)
         {
+            if (!File.Exists(RenderedRoot + "7day.txt"))
+                return;
             StreamReader summaryReader = File.OpenText(RenderedRoot + "7day.txt");
             while (!summaryReader.EndOfStream)
             {
@@ -68,7 +62,7 @@ namespace VisualOne
                         kept = keptCount
                     };
                     Guid guid = Guid.Parse(guidStr);
-                    m_performanceValues.Add(guid, record);
+                    performanceValues.Add(guid, record);
                 }
                 catch (Exception e)
                 {
@@ -101,7 +95,7 @@ namespace VisualOne
         public void OpenBP(BluePrint bp)
         {
             var pptApp = new PPT.Application();
-            PPT.Presentation pres = pptApp.Presentations.Open(bp.flatPath, MSO.MsoTriState.msoTrue);
+            PPT.Presentation pres = pptApp.Presentations.Open(bp.FlattendPptxPath, MSO.MsoTriState.msoTrue);
 
             // Find the exact blueprint slide
             foreach (PPT.Slide sld in pres.Slides)
@@ -116,7 +110,7 @@ namespace VisualOne
                             notesText = notesText.Replace('\r', '\n');      // Clean up
                             string[] properties = notesText.Split('\n');
                             string bluePrintGuid = properties[0].Substring(3);
-                            if(bluePrintGuid == bp.guid.ToString())
+                            if(bluePrintGuid == bp.Guid.ToString())
                             {
                                 sld.Select();
                             }
@@ -132,7 +126,7 @@ namespace VisualOne
             if (pptApp.Presentations.Count < 1)
                 return;     // TODO: Alert need a target to apply
             PPT.Presentation targetPres = pptApp.Presentations[1];
-            PPT.Presentation sourcePres = pptApp.Presentations.Open(bp.flatPath,
+            PPT.Presentation sourcePres = pptApp.Presentations.Open(bp.FlattendPptxPath,
                                                                     MSO.MsoTriState.msoTrue,
                                                                     MSO.MsoTriState.msoFalse,
                                                                     MSO.MsoTriState.msoFalse);
@@ -216,28 +210,29 @@ namespace VisualOne
             }
         }
 
-        private void AllGuidsWithPngs(string[] pngFiles, HashSet<Guid> guids)
+        private void AllGuidsWithPngs(string[] pngFiles, Dictionary<Guid, string> guidsWithPngs)
         {
             var renderedRootIndex = RenderedRoot.Length;
             foreach(var path in pngFiles)
             {
                 if (!path.StartsWith(RenderedRoot))
                     continue;
-                string file = path.Substring(renderedRootIndex);
+                int lastSlashIndex = path.LastIndexOf('\\');
+                string file = path.Substring(lastSlashIndex+1);
                 var dotIndex = file.IndexOf('.');
-                Guid guid;
-                if (dotIndex > 0 && Guid.TryParse(file.Substring(0, dotIndex), out guid))
-                    guids.Add(guid);
+                if (dotIndex > 0 && Guid.TryParse(file.Substring(0, dotIndex), out Guid guid))
+                    guidsWithPngs[guid] = path;
             }
         }
 
         public void ReadFlatCatalog()
         {
-            string[] pngFiles = Directory.GetFiles(RenderedRoot, "*.png", SearchOption.TopDirectoryOnly);
-            HashSet<Guid> guidsWithPngs = new HashSet<Guid>();
+            string[] pngFiles = Directory.GetFiles(RenderedRoot, "*.png", SearchOption.AllDirectories);
+            Dictionary<Guid, string> guidsWithPngs = new Dictionary<Guid, string>();
             AllGuidsWithPngs(pngFiles, guidsWithPngs);
             StreamReader catalogReader = File.OpenText(SourceRoot + "Catalog.txt");
-            ReadPerformanceSummary();
+            Dictionary<Guid, TempSeenKeptRecord> performanceValues = new Dictionary<Guid, TempSeenKeptRecord>();
+            ReadPerformanceSummary(performanceValues);
             int guidStringLength = Guid.Empty.ToString().Length;
             while (!catalogReader.EndOfStream)
             {
@@ -251,8 +246,7 @@ namespace VisualOne
                     continue;
                 }
 
-                Guid bluePrintGuid;
-                if(!Guid.TryParse( bpLine.Substring(0, firstSpaceIndex), out bluePrintGuid ))
+                if (!Guid.TryParse(bpLine.Substring(0, firstSpaceIndex), out Guid bluePrintGuid))
                     continue;
                 string original = bpLine.Substring(firstSpaceIndex + 1);
                 string[] segments = original.Split('\\');
@@ -261,34 +255,32 @@ namespace VisualOne
                 string crop = segments[2];
                 string aspect = segments[3];
                 string path = segments[4];
-                string pngPath = RenderedRoot + bluePrintGuid + ".png";
-                string flatPptxPath = SourceRoot + bluePrintGuid + ".pptx";
-                if (guidsWithPngs.Contains(bluePrintGuid))
+                if (guidsWithPngs.ContainsKey(bluePrintGuid))
                 {
                     BluePrint bp = new BluePrint
                     {
-                        source = path,
-                        flatPath = flatPptxPath,
-                        originalPath = original,
-                        layout = layout,
-                        type = type,
-                        aspectRaio = aspect,
-                        cropNonCrop = crop,
-                        guid = bluePrintGuid,
-                        pngPath = pngPath,
+                        Source = path,
+                        FlattendPptxPath = SourceRoot + bluePrintGuid + ".pptx",
+                        OriginalPath = original,
+                        Layout = layout,
+                        Type = type,
+                        AspectRaio = aspect,
+                        CropNonCrop = crop,
+                        Guid = bluePrintGuid,
+                        PngPath = guidsWithPngs[bluePrintGuid],
                     };
-                    if (m_performanceValues.ContainsKey(bluePrintGuid))
+                    if (performanceValues.ContainsKey(bluePrintGuid))
                     {
-                        bp.kept = m_performanceValues[bluePrintGuid].kept;
-                        bp.seen = m_performanceValues[bluePrintGuid].seen;
-                        if (bp.seen > 0)
-                            bp.keptRate = (double)bp.kept * 800 / bp.seen;
+                        bp.Kept = performanceValues[bluePrintGuid].kept;
+                        bp.Seen = performanceValues[bluePrintGuid].seen;
+                        if (bp.Seen > 0)
+                            bp.KeptRate = (double)bp.Kept * 800 / bp.Seen;
                     }
-                    m_bluePrints.Add(bp);
+                    this.BluePrints.Add(bp);
                 }
                 else
                 {
-                    Console.WriteLine(pngPath);
+                    Console.WriteLine("No png found for " + bluePrintGuid);
                 }
             }
             catalogReader.Close();
