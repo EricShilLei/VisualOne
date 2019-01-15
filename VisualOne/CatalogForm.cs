@@ -34,7 +34,7 @@ namespace VisualOne
                 folderBrowserResult = this.sourceFolderBrowserDialog.ShowDialog(this);
                 string outputRoot = folderBrowserResult == DialogResult.OK ? this.sourceFolderBrowserDialog.SelectedPath : null;
                 Catalog = new CatalogClass(sourceRoot, outputRoot);
-                Catalog.CreateCatalog(null);
+                Catalog.ReadFlatCatalog();
 
             }
             else
@@ -43,7 +43,7 @@ namespace VisualOne
             this.renderedRootTextbox.Text = Catalog.RenderedRoot;
 
             var source = new BindingSource();
-            m_bluePrintsView = new BindingListView<BluePrint>(Catalog.m_bluePrints);
+            m_bluePrintsView = new BindingListView<BluePrint>(Catalog.BluePrints);
             source.DataSource = m_bluePrintsView;
             this.CatalogGridView.AutoGenerateColumns = true;
             this.CatalogGridView.DataSource = source;
@@ -68,12 +68,14 @@ namespace VisualOne
 
         private int SearchWithGuid(string text)
         {
+            if (!Guid.TryParse(text, out Guid selectedGuid))
+                return -1;
             if (text == "")
                 return -1;
             foreach (DataGridViewRow row in this.CatalogGridView.Rows)
             {
                 ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)row.DataBoundItem;
-                if (bpWrapper.Object.guid.StartsWith(text))
+                if (bpWrapper.Object.Guid == selectedGuid)
                     return row.Index;
             }
             return -1;
@@ -85,19 +87,8 @@ namespace VisualOne
             {
                 var control = (DataGridView)sender;
                 ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)e.Row.DataBoundItem;
-                string imagePath = bpWrapper.Object.path;
+                string imagePath = bpWrapper.Object.PngPath;
                 this.blueprintPreviewPictureBox.Image = System.Drawing.Image.FromFile(imagePath);
-                int lastSlashIndex = imagePath.LastIndexOf('\\');
-                string originalPath = imagePath.Remove(lastSlashIndex + 1) + "original.png";
-                try
-                {
-                    this.originalPictureBox.Image = System.Drawing.Image.FromFile(originalPath);
-                }
-                catch( Exception ex)
-                {
-                    this.originalPictureBox.Image = null;
-                    Console.WriteLine(ex.Message);
-                }
             }
         }
 
@@ -111,16 +102,16 @@ namespace VisualOne
             this.CatalogGridView.CurrentCell = null;
             this.m_bluePrintsView.ApplyFilter(delegate (BluePrint bp) 
             {
-                return bp.seen >= this.seenGreaterThan &&
-                       bp.kept >= this.keptGreaterThan &&
-                       bp.seen < this.seenLessThan &&
-                       bp.kept < this.keptLessThan &&
-                       bp.keptRate < this.keptRateUpbound &&
-                       bp.keptRate >= this.keptRateLowbound &&
-                       (!this.hasTypeFilter || bp.type == this.typeFilter.Text) &&
-                       (!this.hasLayoutFilter || bp.layout == this.layoutFilter.Text) &&
-                       (!this.hasCropFilter || bp.cropNonCrop == this.cropFilter.Text) &&
-                       (!this.hasSourceFilter || bp.source == this.sourceFilter.Text);
+                return bp.Seen >= this.seenGreaterThan &&
+                       bp.Kept >= this.keptGreaterThan &&
+                       bp.Seen < this.seenLessThan &&
+                       bp.Kept < this.keptLessThan &&
+                       bp.KeptRate < this.keptRateUpbound &&
+                       bp.KeptRate >= this.keptRateLowbound &&
+                       (!this.hasTypeFilter || bp.Type == this.typeFilter.Text) &&
+                       (!this.hasLayoutFilter || bp.Layout == this.layoutFilter.Text) &&
+                       (!this.hasCropFilter || bp.CropNonCrop == this.cropFilter.Text) &&
+                       (!this.hasSourceFilter || bp.Source == this.sourceFilter.Text);
             });
             this.inFilterBluePrintsCount.Text = this.m_bluePrintsView.Count.ToString();
         }
@@ -221,14 +212,6 @@ namespace VisualOne
             Catalog.OpenBP(bpWrapper.Object);
         }
 
-        private void DuplicateToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            var thmxSelectorControl = new ThemeSelectorForm(Catalog.m_sourcesFor01_1Photo, Catalog.RenderedRoot);
-            thmxSelectorControl.ShowDialog(this);
-            Catalog.DuplicateBPTo(bpWrapper.Object, thmxSelectorControl.SelectedTheme);
-        }
-
         private void ExamineToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
@@ -238,7 +221,7 @@ namespace VisualOne
         private void ApplyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            Catalog.DuplicateBPToCurrentPresentation(bpWrapper.Object);
+            Catalog.DuplicateBPToActivePresentation(bpWrapper.Object);
         }
 
         private void CatalogGridView_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -251,13 +234,13 @@ namespace VisualOne
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
             var bp = bpWrapper.Object;
-            this.typeFilter.Text = bp.type;
+            this.typeFilter.Text = bp.Type;
             this.hasTypeFilter = true;
-            this.sourceFilter.Text = bp.source;
+            this.sourceFilter.Text = bp.Source;
             this.hasSourceFilter = true;
-            this.cropFilter.Text = bp.cropNonCrop;
+            this.cropFilter.Text = bp.CropNonCrop;
             this.hasCropFilter = true;
-            this.layoutFilter.Text = bp.layout;
+            this.layoutFilter.Text = bp.Layout;
             this.hasLayoutFilter = true;
         }
     }

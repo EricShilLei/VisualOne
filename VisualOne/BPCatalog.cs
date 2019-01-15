@@ -6,7 +6,7 @@ using System.Windows.Forms;
 
 namespace VisualOne
 {
-    static class Program
+    static class BPCatalog
     {
         /// <summary>
         /// The main entry point for the application.
@@ -16,7 +16,7 @@ namespace VisualOne
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new CatalogForm(null));
         }
     }
 }

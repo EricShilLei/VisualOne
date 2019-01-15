@@ -1,36 +1,36 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace VisualOne
 {
     public class BluePrint
     {
-        public string guid { get; set; }
+        public Guid Guid { get; set; }
 
-        public string source { get; set; }
+        public string Source { get; set; }
 
-        public string layout { get; set; }
+        public string Layout { get; set; }
 
-        public string type { get; set; }
+        public string Type { get; set; }
 
-        public string cropNonCrop { get; set; }
+        public string CropNonCrop { get; set; }
 
-        public string aspectRaio;
+        public string AspectRaio;
 
         public string variant;
 
-        public double keptRate { get; set; }
+        public double KeptRate { get; set; }
 
-        public UInt32 kept { get; set; }
+        public UInt32 Kept { get; set; }
 
-        public UInt32 seen { get; set; }
+        public UInt32 Seen { get; set; }
 
-        public string path;
+        public string PngPath;
 
-        public string[] otherProperties;
+        public string FlattendPptxPath;
+
+        public string OriginalPath;
+
+        public string[] OtherProperties;
     }
 
     public struct TempSeenKeptRecord
