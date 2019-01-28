@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.IO;
 using System.IO.Packaging;
 using System.Threading.Tasks;
@@ -490,7 +491,9 @@ namespace Splitter
         {
             string directory = sourceDir;
             var pptxFiles = Directory.EnumerateFiles(directory, "*.pptx", SearchOption.AllDirectories);
-            StreamWriter catalogWriter = File.CreateText(outputDir + "Catalog.txt");
+
+            ConcurrentDictionary<string, string> bpSet = new ConcurrentDictionary<string, string>();
+
             Parallel.ForEach(pptxFiles, (currentFile) =>
              {
                  Package original = null;
@@ -523,13 +526,20 @@ namespace Splitter
                      foreach (int slideId in single.SlideRelIds.Keys)
                      {
                          single.OutputSlide(slideId, outputDir);
-                         catalogLines += single.CurrentBP.Guid + " " + fileName + catalogWriter.NewLine;
+                         bpSet.TryAdd(single.CurrentBP.Guid.ToString(), fileName);
                      }
-                     catalogWriter.WriteLine(catalogLines);
                  }
              }
             );
-            catalogWriter.Flush();
+
+            using (StreamWriter catalogWriter = File.CreateText(outputDir + "Catalog.txt"))
+            {
+                foreach(var bp in bpSet)
+                {
+                    catalogWriter.WriteLine($"{bp.Key} {bp.Value}");
+                }
+                catalogWriter.Flush();
+            }
         }
 
         static void RunOneFile(string sourceFile, string outputDir)

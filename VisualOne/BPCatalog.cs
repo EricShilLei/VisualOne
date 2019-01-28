@@ -16,7 +16,7 @@ namespace VisualOne
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new CatalogForm(null));
+            Application.Run(new MainForm());
         }
     }
 }

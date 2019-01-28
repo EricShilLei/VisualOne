@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 using PPT = Microsoft.Office.Interop.PowerPoint;
 using MSO = Microsoft.Office.Core;
@@ -225,6 +226,10 @@ namespace VisualOne
             }
         }
 
+        public void ReGenerateCatalog()
+        {
+        }
+
         public void ReadFlatCatalog()
         {
             string[] pngFiles = Directory.GetFiles(RenderedRoot, "*.png", SearchOption.AllDirectories);
@@ -255,33 +260,30 @@ namespace VisualOne
                 string crop = segments[2];
                 string aspect = segments[3];
                 string path = segments[4];
-                if (guidsWithPngs.ContainsKey(bluePrintGuid))
+                BluePrint bp = new BluePrint
                 {
-                    BluePrint bp = new BluePrint
-                    {
-                        Source = path,
-                        FlattendPptxPath = SourceRoot + bluePrintGuid + ".pptx",
-                        OriginalPath = original,
-                        Layout = layout,
-                        Type = type,
-                        AspectRaio = aspect,
-                        CropNonCrop = crop,
-                        Guid = bluePrintGuid,
-                        PngPath = guidsWithPngs[bluePrintGuid],
-                    };
-                    if (performanceValues.ContainsKey(bluePrintGuid))
-                    {
-                        bp.Kept = performanceValues[bluePrintGuid].kept;
-                        bp.Seen = performanceValues[bluePrintGuid].seen;
-                        if (bp.Seen > 0)
-                            bp.KeptRate = (double)bp.Kept * 800 / bp.Seen;
-                    }
-                    this.BluePrints.Add(bp);
-                }
-                else
-                {
+                    Source = path,
+                    FlattendPptxPath = SourceRoot + bluePrintGuid + ".pptx",
+                    OriginalPath = original,
+                    Layout = layout,
+                    Type = type,
+                    AspectRaio = aspect,
+                    CropNonCrop = crop,
+                    Guid = bluePrintGuid,
+                    PngPath = guidsWithPngs.ContainsKey(bluePrintGuid) ? guidsWithPngs[bluePrintGuid] : ""
+                };
+                if (!guidsWithPngs.ContainsKey(bluePrintGuid))
                     Console.WriteLine("No png found for " + bluePrintGuid);
+
+                if (performanceValues.ContainsKey(bluePrintGuid))
+                {
+                    bp.Kept = performanceValues[bluePrintGuid].kept;
+                    bp.Seen = performanceValues[bluePrintGuid].seen;
+                    if (bp.Seen > 0)
+                        bp.KeptRate = (double)bp.Kept * 800 / bp.Seen;
                 }
+
+                this.BluePrints.Add(bp);
             }
             catalogReader.Close();
         }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 
@@ -29,16 +30,18 @@ namespace VisualOne
             if (catalog == null)
             {
                 var folderBrowserResult = this.sourceFolderBrowserDialog.ShowDialog(this);
-                string sourceRoot = folderBrowserResult == DialogResult.OK ?  this.sourceFolderBrowserDialog.SelectedPath : null;
+                string sourceRoot = folderBrowserResult == DialogResult.OK ? this.sourceFolderBrowserDialog.SelectedPath : null;
                 this.sourceFolderBrowserDialog.Description = "Pick the rendered thumbnails folder";
                 folderBrowserResult = this.sourceFolderBrowserDialog.ShowDialog(this);
                 string outputRoot = folderBrowserResult == DialogResult.OK ? this.sourceFolderBrowserDialog.SelectedPath : null;
                 Catalog = new CatalogClass(sourceRoot, outputRoot);
-                Catalog.ReadFlatCatalog();
-
             }
             else
+            {
                 Catalog = catalog;
+            }
+            Catalog.ReadFlatCatalog();
+
             this.sourceRootTextbox.Text = Catalog.SourceRoot;
             this.renderedRootTextbox.Text = Catalog.RenderedRoot;
 
@@ -88,7 +91,9 @@ namespace VisualOne
                 var control = (DataGridView)sender;
                 ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)e.Row.DataBoundItem;
                 string imagePath = bpWrapper.Object.PngPath;
-                this.blueprintPreviewPictureBox.Image = System.Drawing.Image.FromFile(imagePath);
+                // TODO: runtime render the thumbnail if it is missing
+                if (File.Exists(imagePath))
+                    this.blueprintPreviewPictureBox.Image = System.Drawing.Image.FromFile(imagePath);
             }
         }
 
