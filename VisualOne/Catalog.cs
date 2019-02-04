@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
+using SharedLib;
 using PPT = Microsoft.Office.Interop.PowerPoint;
 using MSO = Microsoft.Office.Core;
 
@@ -247,7 +248,7 @@ namespace VisualOne
 
                 // The format is: BlueprintID,FileName,Layout,Type,Crop,Aspect,CloneBPID,OriginalFile
                 string[] segments = bpLine.Split(',');
-                if (segments == null || segments.Length != 9)
+                if (segments == null || segments.Length != 11)
                 {
                     Log.TraceTag(Log.Level.Error, "Wrong file format in Catalog.txt: {0}", bpLine);
                     continue;
@@ -261,17 +262,21 @@ namespace VisualOne
                 }
                 string filename = segments[1];
                 string slideIndex = segments[2];
-                string layout = segments[3];
-                string type = segments[4];
-                string crop = segments[5];
-                string aspect = segments[6];
-                string cloneBPID = segments[7];
-                string originalFile = segments[8];
+                string themeName = segments[3];
+                string variantName = segments[4];
+                string layout = segments[5];
+                string type = segments[6];
+                string crop = segments[7];
+                string aspect = segments[8];
+                string cloneBPID = segments[9];
+                string originalFile = segments[10];
                 BluePrint bp = new BluePrint
                 {
                     Guid = bluePrintGuid,
                     Source = filename,
                     FlattendPptxPath = SourceRoot + filename,
+                    Theme = themeName,
+                    Variant = variantName,
                     OriginalPath = originalFile,
                     Layout = layout,
                     Type = type,

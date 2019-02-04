@@ -53,7 +53,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BluePrint.cs" />
     <Compile Include="Catalog.cs" />
     <Compile Include="CatalogForm.cs">
       <SubType>Form</SubType>
@@ -62,7 +61,6 @@
       <DependentUpon>CatalogForm.cs</DependentUpon>
     </Compile>
     <Compile Include="BPCatalog.cs" />
-    <Compile Include="Logger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -106,6 +104,10 @@
     <ProjectReference Include="..\BindingListView\BindingListView.csproj">
       <Project>{75af36a8-7797-4023-b183-5b63d448420a}</Project>
       <Name>BindingListView</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SharedLib\SharedLib.csproj">
+      <Project>{51f7dd7f-d748-4a47-894b-1731ad01834a}</Project>
+      <Name>SharedLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

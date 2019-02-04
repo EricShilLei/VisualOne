@@ -526,10 +526,15 @@ namespace Splitter
                      string catalogLines = string.Empty;
                      foreach (int slideId in single.SlideRelIds.Keys)
                      {
-                         if (single.OutputSlide(slideId, outputDir))
+                         if (ExtractThmeAndVariantFromFilename(path, out string themeName, out string variantName) && single.OutputSlide(slideId, outputDir))
                          {
-                             string bpValue = string.Format($"{single.CurrentBP.Guid.ToString()}.pptx,0,{layout},{type},{crop},{aspect},,{fileName}");
+                             string bpValue = string.Format($"{single.CurrentBP.Guid.ToString()}.pptx,0,{themeName},{variantName},{layout},{type},{crop},{aspect},,{fileName}");
                              bpSet.TryAdd(single.CurrentBP.Guid.ToString(), bpValue);
+                         }
+                         else
+                         {
+                             Console.WriteLine("Failed to process file {0}", currentFile);
+                             throw new Exception("Failed to process file " + currentFile);
                          }
                      }
                  }
@@ -538,13 +543,40 @@ namespace Splitter
 
             using (StreamWriter catalogWriter = File.CreateText(outputDir + "_Catalog.txt"))
             {
-                catalogWriter.WriteLine("#BlueprintID,FileName,SlideIndex,Layout,Type,Crop,Aspect,CloneBPID,OriginalFile");
+                catalogWriter.WriteLine("#BlueprintID,FileName,SlideIndex,Theme,Variant,Layout,Type,Crop,Aspect,CloneBPID,OriginalFile");
                 foreach (var bp in bpSet)
                 {
                     catalogWriter.WriteLine($"{bp.Key},{bp.Value}");
                 }
                 catalogWriter.Flush();
             }
+        }
+
+        static bool ExtractThmeAndVariantFromFilename(string filename, out string themeName, out string variantName)
+        {
+            themeName = variantName = string.Empty;
+
+            string[] parts = filename.Split('.');
+            if (parts.Length != 2)
+            {
+                Console.WriteLine("Filename doesn't match format:" + filename);
+                return false;
+            }
+            if (!parts[1].Equals("pptx", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Console.WriteLine("Filename doesn't have postfix pptx:" + filename);
+                return false;
+            }
+            string name = parts[0];
+            if (name.Length < 3 || name[name.Length - 1] < '0' || name[name.Length - 1] > '4' || name[name.Length - 2] != 'v' && name[name.Length - 2] != 'V')
+            {
+                Console.WriteLine("Filename doesn't have correct variant name:" + filename);
+                return false;
+            }
+
+            themeName = name.Substring(0, name.Length - 2);
+            variantName = name.Substring(name.Length - 2);
+            return true;
         }
 
         static void RunOneFile(string sourceFile, string outputDir)

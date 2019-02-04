@@ -1,12 +1,16 @@
 ﻿using System;
 
-namespace VisualOne
+namespace SharedLib
 {
     public class BluePrint
     {
         public Guid Guid { get; set; }
 
         public string Source { get; set; }
+
+        public string Theme { get; set; }
+
+        public string Variant { get; set; }
 
         public string Layout { get; set; }
 

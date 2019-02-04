@@ -101,7 +101,7 @@
             this.m_txtTargetFolder.Name = "m_txtTargetFolder";
             this.m_txtTargetFolder.Size = new System.Drawing.Size(282, 26);
             this.m_txtTargetFolder.TabIndex = 6;
-            this.m_txtTargetFolder.Text = "D:\\SD\\BP\\Active\\";
+            this.m_txtTargetFolder.Text = "D:\\SD\\BP\\Clone\\";
             // 
             // btnGenerateCatalog
             // 
