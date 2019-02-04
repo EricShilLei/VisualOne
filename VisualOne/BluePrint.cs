@@ -28,6 +28,8 @@ namespace VisualOne
 
         public string FlattendPptxPath;
 
+        public string CloneBPID;
+
         public string OriginalPath;
 
         public string[] OtherProperties;

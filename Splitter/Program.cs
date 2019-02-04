@@ -459,7 +459,7 @@ namespace Splitter
             return false;
         }
 
-        public void OutputSlide(int slideId, string outputPath)
+        public bool OutputSlide(int slideId, string outputPath)
         {
             CurrentBP = new BluePrintParts
             {
@@ -468,7 +468,7 @@ namespace Splitter
 
             FillSkipList();
             if (CurrentBP.Guid == Guid.Empty)
-                return;
+                return false;
             m_outputPackage = Package.Open(outputPath + CurrentBP.Guid + ".pptx", FileMode.Create);
             foreach (PackagePart part in m_originalPackage.GetParts())
             {
@@ -482,6 +482,7 @@ namespace Splitter
                     part.GetStream().CopyTo(clonedPart.GetStream());
             }
             FlushAndClosePackage();
+            return true;
         }
     }
 
@@ -525,18 +526,22 @@ namespace Splitter
                      string catalogLines = string.Empty;
                      foreach (int slideId in single.SlideRelIds.Keys)
                      {
-                         single.OutputSlide(slideId, outputDir);
-                         bpSet.TryAdd(single.CurrentBP.Guid.ToString(), fileName);
+                         if (single.OutputSlide(slideId, outputDir))
+                         {
+                             string bpValue = string.Format($"{single.CurrentBP.Guid.ToString()}.pptx,0,{layout},{type},{crop},{aspect},,{fileName}");
+                             bpSet.TryAdd(single.CurrentBP.Guid.ToString(), bpValue);
+                         }
                      }
                  }
              }
             );
 
-            using (StreamWriter catalogWriter = File.CreateText(outputDir + "Catalog.txt"))
+            using (StreamWriter catalogWriter = File.CreateText(outputDir + "_Catalog.txt"))
             {
-                foreach(var bp in bpSet)
+                catalogWriter.WriteLine("#BlueprintID,FileName,SlideIndex,Layout,Type,Crop,Aspect,CloneBPID,OriginalFile");
+                foreach (var bp in bpSet)
                 {
-                    catalogWriter.WriteLine($"{bp.Key} {bp.Value}");
+                    catalogWriter.WriteLine($"{bp.Key},{bp.Value}");
                 }
                 catalogWriter.Flush();
             }

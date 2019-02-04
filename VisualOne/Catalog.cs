@@ -235,42 +235,50 @@ namespace VisualOne
             string[] pngFiles = Directory.GetFiles(RenderedRoot, "*.png", SearchOption.AllDirectories);
             Dictionary<Guid, string> guidsWithPngs = new Dictionary<Guid, string>();
             AllGuidsWithPngs(pngFiles, guidsWithPngs);
-            StreamReader catalogReader = File.OpenText(SourceRoot + "Catalog.txt");
+            StreamReader catalogReader = File.OpenText(SourceRoot + "_Catalog.txt");
             Dictionary<Guid, TempSeenKeptRecord> performanceValues = new Dictionary<Guid, TempSeenKeptRecord>();
             ReadPerformanceSummary(performanceValues);
             int guidStringLength = Guid.Empty.ToString().Length;
             while (!catalogReader.EndOfStream)
             {
                 string bpLine = catalogReader.ReadLine();
-                if (bpLine == string.Empty)
+                if (bpLine == string.Empty || bpLine.Trim().Length == 0 || bpLine.StartsWith("#")) // '#' is the beginning of comments
                     continue;
-                int firstSpaceIndex = bpLine.IndexOf(' ');
-                if(firstSpaceIndex != guidStringLength)
+
+                // The format is: BlueprintID,FileName,Layout,Type,Crop,Aspect,CloneBPID,OriginalFile
+                string[] segments = bpLine.Split(',');
+                if (segments == null || segments.Length != 9)
                 {
-                    Console.WriteLine(bpLine);
+                    Log.TraceTag(Log.Level.Error, "Wrong file format in Catalog.txt: {0}", bpLine);
                     continue;
                 }
-
-                if (!Guid.TryParse(bpLine.Substring(0, firstSpaceIndex), out Guid bluePrintGuid))
+                string guidStr = segments[0];
+                Guid bluePrintGuid;
+                if (!Guid.TryParse(guidStr, out bluePrintGuid))
+                {
+                    Log.TraceTag(Log.Level.Error, "Failed to parse blueprint GUID {0}", guidStr);
                     continue;
-                string original = bpLine.Substring(firstSpaceIndex + 1);
-                string[] segments = original.Split('\\');
-                string layout = segments[0];
-                string type = segments[1];
-                string crop = segments[2];
-                string aspect = segments[3];
-                string path = segments[4];
+                }
+                string filename = segments[1];
+                string slideIndex = segments[2];
+                string layout = segments[3];
+                string type = segments[4];
+                string crop = segments[5];
+                string aspect = segments[6];
+                string cloneBPID = segments[7];
+                string originalFile = segments[8];
                 BluePrint bp = new BluePrint
                 {
-                    Source = path,
-                    FlattendPptxPath = SourceRoot + bluePrintGuid + ".pptx",
-                    OriginalPath = original,
+                    Guid = bluePrintGuid,
+                    Source = filename,
+                    FlattendPptxPath = SourceRoot + filename,
+                    OriginalPath = originalFile,
                     Layout = layout,
                     Type = type,
                     AspectRaio = aspect,
                     CropNonCrop = crop,
-                    Guid = bluePrintGuid,
-                    PngPath = guidsWithPngs.ContainsKey(bluePrintGuid) ? guidsWithPngs[bluePrintGuid] : ""
+                    CloneBPID = cloneBPID,
+                    PngPath = guidsWithPngs.ContainsKey(bluePrintGuid) ? guidsWithPngs[bluePrintGuid] : "",
                 };
                 if (!guidsWithPngs.ContainsKey(bluePrintGuid))
                     Console.WriteLine("No png found for " + bluePrintGuid);
