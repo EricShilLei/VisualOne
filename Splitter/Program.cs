@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Packaging;
 using System.Threading.Tasks;
 using System.Xml;
+using SharedLib;
 
 namespace Splitter
 {
@@ -493,7 +494,7 @@ namespace Splitter
             string directory = sourceDir;
             var pptxFiles = Directory.EnumerateFiles(directory, "*.pptx", SearchOption.AllDirectories);
 
-            ConcurrentDictionary<string, string> bpSet = new ConcurrentDictionary<string, string>();
+            ConcurrentDictionary<string, BluePrint> bpSet = new ConcurrentDictionary<string, BluePrint>();
 
             Parallel.ForEach(pptxFiles, (currentFile) =>
              {
@@ -529,7 +530,21 @@ namespace Splitter
                          if (ExtractThmeAndVariantFromFilename(path, out string themeName, out string variantName) && single.OutputSlide(slideId, outputDir))
                          {
                              string bpValue = string.Format($"{single.CurrentBP.Guid.ToString()}.pptx,0,{themeName},{variantName},{layout},{type},{crop},{aspect},,{fileName}");
-                             bpSet.TryAdd(single.CurrentBP.Guid.ToString(), bpValue);
+                             bpSet.TryAdd(single.CurrentBP.Guid.ToString(),
+                                          new BluePrint()
+                                          {
+                                              Guid = single.CurrentBP.Guid,
+                                              Source = single.CurrentBP.Guid.ToString() + ".pptx",
+                                              SlideIndex = 0,
+                                              Theme = themeName,
+                                              Variant = variantName,
+                                              Layout = layout,
+                                              Type = type,
+                                              CropNonCrop = crop,
+                                              AspectRaio = aspect,
+                                              // CloneBPID
+                                              OriginalPath = fileName
+                                          });
                          }
                          else
                          {
@@ -541,15 +556,12 @@ namespace Splitter
              }
             );
 
-            using (StreamWriter catalogWriter = File.CreateText(outputDir + "_Catalog.txt"))
+            List<BluePrint> bpList = new List<BluePrint>();
+            foreach (var bp in bpSet)
             {
-                catalogWriter.WriteLine("#BlueprintID,FileName,SlideIndex,Theme,Variant,Layout,Type,Crop,Aspect,CloneBPID,OriginalFile");
-                foreach (var bp in bpSet)
-                {
-                    catalogWriter.WriteLine($"{bp.Key},{bp.Value}");
-                }
-                catalogWriter.Flush();
+                bpList.Add(bp.Value);
             }
+            CatalogClass.SaveBlueprints(bpList, outputDir);
         }
 
         static bool ExtractThmeAndVariantFromFilename(string filename, out string themeName, out string variantName)

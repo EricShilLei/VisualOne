@@ -53,7 +53,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Catalog.cs" />
+    <Compile Include="BlueprintOperations.cs" />
     <Compile Include="CatalogForm.cs">
       <SubType>Form</SubType>
     </Compile>

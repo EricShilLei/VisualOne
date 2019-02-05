@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 
 namespace SharedLib
 {
-    public class BluePrint
+    public class BluePrint : IComparable<BluePrint>
     {
         public Guid Guid { get; set; }
 
@@ -28,6 +30,8 @@ namespace SharedLib
 
         public UInt32 Seen { get; set; }
 
+        public uint SlideIndex;
+
         public string PngPath;
 
         public string FlattendPptxPath;
@@ -37,6 +41,15 @@ namespace SharedLib
         public string OriginalPath;
 
         public string[] OtherProperties;
+
+
+
+        public int CompareTo(BluePrint compareBP)
+        {
+            if (compareBP == null)
+                return 1;
+            return this.Guid.CompareTo(compareBP.Guid);
+        }
     }
 
     public struct TempSeenKeptRecord

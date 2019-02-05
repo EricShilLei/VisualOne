@@ -215,25 +215,25 @@ namespace VisualOne
         private void BlueprintPreviewPictureBox_DoubleClick(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            Catalog.OpenBP(bpWrapper.Object);
+            BlueprintOperations.OpenBP(bpWrapper.Object);
         }
 
         private void ExamineToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            Catalog.OpenBP(bpWrapper.Object);
+            BlueprintOperations.OpenBP(bpWrapper.Object);
         }
 
         private void ApplyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            Catalog.DuplicateBPToActivePresentation(bpWrapper.Object);
+            BlueprintOperations.DuplicateBPToActivePresentation(bpWrapper.Object);
         }
 
         private void CatalogGridView_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
         {
             ObjectView<BluePrint> bpWrapper = (ObjectView<BluePrint>)this.CatalogGridView.CurrentRow.DataBoundItem;
-            Catalog.OpenBP(bpWrapper.Object);
+            BlueprintOperations.OpenBP(bpWrapper.Object);
         }
 
         private void PopulateFiltersToolStripMenuItem_Click(object sender, EventArgs e)

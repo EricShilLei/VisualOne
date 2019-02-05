@@ -101,7 +101,7 @@
             this.m_txtTargetFolder.Name = "m_txtTargetFolder";
             this.m_txtTargetFolder.Size = new System.Drawing.Size(282, 26);
             this.m_txtTargetFolder.TabIndex = 6;
-            this.m_txtTargetFolder.Text = "D:\\SD\\BP\\Clone\\";
+            this.m_txtTargetFolder.Text = "D:\\Git\\VisualOne\\TestFiles\\NewActive";
             // 
             // btnGenerateCatalog
             // 
@@ -128,7 +128,7 @@
             this.m_txtThumbnailFolder.Name = "m_txtThumbnailFolder";
             this.m_txtThumbnailFolder.Size = new System.Drawing.Size(281, 26);
             this.m_txtThumbnailFolder.TabIndex = 9;
-            this.m_txtThumbnailFolder.Text = "D:\\SD\\BP\\Thumbnail\\";
+            this.m_txtThumbnailFolder.Text = "D:\\Git\\VisualOne\\TestFiles\\Thumbnails";
             // 
             // MainForm
             // 
