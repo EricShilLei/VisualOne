@@ -35,29 +35,36 @@ namespace VisualOne
 
         public static void OpenBP(BluePrint bp)
         {
-            var pptApp = new PPT.Application();
-            PPT.Presentation pres = pptApp.Presentations.Open(bp.FlattendPptxPath, MSO.MsoTriState.msoTrue);
-
-            // Find the exact blueprint slide
-            foreach (PPT.Slide sld in pres.Slides)
+            try
             {
-                foreach (PPT.Shape sp in sld.NotesPage.Shapes)
+                var pptApp = new PPT.Application();
+                PPT.Presentation pres = pptApp.Presentations.Open(bp.FlattendPptxPath, MSO.MsoTriState.msoTrue);
+
+                // Find the exact blueprint slide
+                foreach (PPT.Slide sld in pres.Slides)
                 {
-                    if (sp.HasTextFrame == MSO.MsoTriState.msoTrue)
+                    foreach (PPT.Shape sp in sld.NotesPage.Shapes)
                     {
-                        string notesText = sp.TextFrame2.TextRange.Text;
-                        if (notesText.StartsWith("ID="))
+                        if (sp.HasTextFrame == MSO.MsoTriState.msoTrue)
                         {
-                            notesText = notesText.Replace('\r', '\n');      // Clean up
-                            string[] properties = notesText.Split('\n');
-                            string bluePrintGuid = properties[0].Substring(3);
-                            if (bluePrintGuid == bp.Guid.ToString())
+                            string notesText = sp.TextFrame2.TextRange.Text;
+                            if (notesText.StartsWith("ID="))
                             {
-                                sld.Select();
+                                notesText = notesText.Replace('\r', '\n');      // Clean up
+                                string[] properties = notesText.Split('\n');
+                                string bluePrintGuid = properties[0].Substring(3);
+                                if (bluePrintGuid == bp.Guid.ToString())
+                                {
+                                    sld.Select();
+                                }
                             }
                         }
                     }
                 }
+            }
+            catch(Exception e)
+            {
+                Log.TraceTag(Log.Level.Error, "Exception when open file {0}, Exception:{1}", bp.FlattendPptxPath, e.ToString());
             }
         }
 

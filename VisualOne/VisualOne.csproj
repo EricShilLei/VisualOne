@@ -53,6 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlueprintDataTable.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="BlueprintOperations.cs" />
     <Compile Include="CatalogForm.cs">
       <SubType>Form</SubType>
@@ -101,10 +104,6 @@
     <Folder Include="Properties\DataSources\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BindingListView\BindingListView.csproj">
-      <Project>{75af36a8-7797-4023-b183-5b63d448420a}</Project>
-      <Name>BindingListView</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SharedLib\SharedLib.csproj">
       <Project>{51f7dd7f-d748-4a47-894b-1731ad01834a}</Project>
       <Name>SharedLib</Name>
